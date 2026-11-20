@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面走丢了 · 禾语智慧农业云平台</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23147a4d'/%3E%3Cpath d='M23.5 7.8c-8.6-.3-14.4 3.4-14.4 9.6 0 1.9.5 3.5 1.5 4.7 2.5-6 7.2-9.9 12.9-13.3' fill='none' stroke='%23d9f7e6' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M23.5 7.8c.8 7.9-2.9 12.9-8.8 13.4-1.6.2-3-.3-3.9-1.2' fill='none' stroke='%2378e3ab' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+    <style>
+        :root {
+            --bg: #f0f5f1;
+            --surface: #ffffff;
+            --ink: #0d2a1e;
+            --muted: #6c8779;
+            --line: #e3ece7;
+            --brand: #14835a;
+            --brand-soft: #e6f5ee;
+            --mint: #2ecf8f;
+            --shadow: 0 24px 60px -30px rgba(10, 46, 32, 0.35);
+        }
+        * { box-sizing: border-box; }
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+            color: var(--ink);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(900px 480px at 12% -10%, rgba(20, 131, 90, 0.12), transparent 68%),
+                radial-gradient(760px 420px at 96% 0%, rgba(221, 154, 43, 0.10), transparent 66%),
+                var(--bg);
+        }
+        .wrap { width: 100%; max-width: 560px; text-align: center; }
+        .card {
+            padding: 40px 34px 34px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            box-shadow: var(--shadow);
+        }
+        .mark {
+            display: grid;
+            place-items: center;
+            width: 54px;
+            height: 54px;
+            margin: 0 auto 18px;
+            color: #04231a;
+            border-radius: 16px;
+            background: linear-gradient(140deg, #7de9b8, #2ecf8f 52%, #a3e05a);
+        }
+        .mark svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+        .code {
+            font-size: 64px;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.06em;
+            color: var(--brand);
+        }
+        h1 { margin: 10px 0 0; font-size: 20px; font-weight: 650; }
+        p { margin: 8px auto 0; max-width: 380px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 26px; }
+        a {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            height: 40px;
+            padding: 0 18px;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #14835a, #1aa06d);
+            box-shadow: 0 10px 22px -12px rgba(20, 131, 90, 0.9);
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        a.ghost {
+            color: var(--brand);
+            background: var(--brand-soft);
+            box-shadow: none;
+        }
+        a:hover { transform: translateY(-2px); filter: brightness(1.03); }
+        .foot { margin-top: 18px; color: var(--muted); font-size: 11.5px; opacity: 0.75; }
+        @media (max-width: 480px) {
+            .card { padding: 30px 20px 26px; }
+            .code { font-size: 52px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="card">
+            <span class="mark">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4.4 19.6c0-8.4 5.2-13.6 15.2-15.2.8 9.4-4.4 15.2-11.2 15.2-1.6 0-3-.6-4-1.6z"></path>
+                    <path d="M5.2 18.8C8.4 13.6 12.4 10 17.6 7.2"></path>
+                </svg>
+            </span>
+            <div class="code">404</div>
+            <h1>这块地，暂时没有种东西</h1>
+            <p>你访问的页面不存在，可能是链接写错了，或者文件被移动过。回到驾驶舱继续查看园区数据吧。</p>
+            <div class="actions">
+                <a href="index.html">返回数据驾驶舱</a>
+                <a class="ghost" href="monitor.html">查看环境监测</a>
+            </div>
+        </div>
+        <p class="foot">禾语 · 智慧农业环境监测与灌溉决策平台</p>
+    </main>
+</body>
+</html>
