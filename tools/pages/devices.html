@@ -1,0 +1,213 @@
+<!--@{"title":"设备控制","nav":"devices","crumb":"设备控制","desc":"设备控制中心：16 台灌溉、调控、监测与安防设备的开关、场景联动与运行参数。","lib":["highcharts"]}@-->
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ceab4"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+    </defs>
+</svg>
+
+<section class="page-head reveal">
+    <div>
+        <p class="page-head__eyebrow">
+            <svg class="icon" aria-hidden="true"><use href="#i-device"></use></svg>
+            DEVICE CONTROL · 16 台设备
+        </p>
+        <h1>设备<span class="accent">控制</span></h1>
+        <p class="page-head__desc">
+            灌溉泵、电磁阀、风机、补光灯、卷帘与摄像头统一纳管。每条指令经 MQTT 下行，
+            设备回执后状态才会翻转，避免界面与现场不一致。
+        </p>
+    </div>
+    <div class="page-head__actions">
+        <span class="pill pill--ok" id="onlineChip"><i class="pill__dot"></i>15 / 16 在线</span>
+        <button type="button" class="btn-agri btn-ghost btn-sm" data-refresh>
+            <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+            刷新状态
+        </button>
+    </div>
+</section>
+
+<!-- ==================================================================
+     一键场景
+     ================================================================== -->
+<section class="card reveal" style="--delay:.04s">
+    <div class="card__head">
+        <div class="card__titles">
+            <h3 class="card__title">一键场景</h3>
+            <p class="card__sub">按作物与天气切换设备组合，执行后逐台回执</p>
+        </div>
+        <span class="pill pill--muted" id="sceneChip">当前：未选择场景</span>
+    </div>
+    <div class="card__body">
+        <div class="scene-grid" id="sceneGrid">
+            <button type="button" class="scene" data-scene="seedling">
+                <span class="scene__check"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                <span class="scene__icon"><svg class="icon" aria-hidden="true"><use href="#i-seedling"></use></svg></span>
+                <span class="scene__name">育苗模式</span>
+                <span class="scene__desc">补光 6h + 环流通风，温度维持 24°C</span>
+            </button>
+            <button type="button" class="scene" data-scene="sunny">
+                <span class="scene__check"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                <span class="scene__icon"><svg class="icon" aria-hidden="true"><use href="#i-sun"></use></svg></span>
+                <span class="scene__name">晴天通风</span>
+                <span class="scene__desc">打开顶窗与环流风机，快速降湿</span>
+            </button>
+            <button type="button" class="scene" data-scene="night">
+                <span class="scene__check"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                <span class="scene__icon"><svg class="icon" aria-hidden="true"><use href="#i-moon"></use></svg></span>
+                <span class="scene__name">夜间保温</span>
+                <span class="scene__desc">关闭通风窗、放下遮阳帘，减少散热</span>
+            </button>
+            <button type="button" class="scene" data-scene="rain">
+                <span class="scene__check"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                <span class="scene__icon"><svg class="icon" aria-hidden="true"><use href="#i-cloud-rain"></use></svg></span>
+                <span class="scene__name">雨天防涝</span>
+                <span class="scene__desc">关闭全部灌溉设备，暂停当日灌溉计划</span>
+            </button>
+        </div>
+    </div>
+    <div class="card__foot">
+        <span>场景执行会记录到农事日志，可在「数据分析」中追溯</span>
+    </div>
+</section>
+
+<!-- ==================================================================
+     筛选 + 设备网格
+     ================================================================== -->
+<div class="filter-bar reveal" style="--delay:.1s">
+    <div class="filter-bar__left">
+        <div class="segmented" id="categoryFilter" role="group" aria-label="设备分类">
+            <button type="button" class="segmented__btn is-active" data-cat="all">全部 16</button>
+            <button type="button" class="segmented__btn" data-cat="irrigation">灌溉 6</button>
+            <button type="button" class="segmented__btn" data-cat="climate">环境调控 5</button>
+            <button type="button" class="segmented__btn" data-cat="sensor">监测 3</button>
+            <button type="button" class="segmented__btn" data-cat="security">安防 2</button>
+        </div>
+    </div>
+    <div class="filter-bar__right">
+        <div class="search-box">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+            <input class="input" id="deviceSearch" type="search" placeholder="搜索设备名称" style="width:170px">
+        </div>
+        <div class="segmented" id="stateFilter" role="group" aria-label="运行状态">
+            <button type="button" class="segmented__btn is-active" data-state="all">全部</button>
+            <button type="button" class="segmented__btn" data-state="on">运行中</button>
+            <button type="button" class="segmented__btn" data-state="off">已停止</button>
+        </div>
+    </div>
+</div>
+
+<div class="device-grid" id="deviceGrid">
+    <article class="card device">
+        <div class="device__head">
+            <span class="device__icon"><svg class="icon" aria-hidden="true"><use href="#i-pump"></use></svg></span>
+            <div class="device__titles">
+                <div class="device__name">1 号灌溉泵</div>
+                <div class="device__type">离心水泵 · A 区</div>
+            </div>
+        </div>
+        <div class="device__visual"><svg class="icon icon--spin" aria-hidden="true"><use href="#i-pump"></use></svg></div>
+    </article>
+</div>
+
+<!-- ==================================================================
+     自动化规则
+     ================================================================== -->
+<section class="card mt-24 reveal" style="--delay:.3s">
+    <div class="card__head">
+        <div class="card__titles">
+            <h3 class="card__title">自动化联动规则</h3>
+            <p class="card__sub">规则命中后由边缘网关本地执行，断网也能生效</p>
+        </div>
+        <span class="pill pill--ok"><i class="pill__dot"></i>3 条启用中</span>
+    </div>
+    <div class="card__body">
+        <div class="rule-row">
+            <div class="rule-row__meta">
+                <div class="rule-row__name">CO₂ 浓度 &gt; 1200 ppm → 开启环流风机</div>
+                <div class="rule-row__sub">作用：B 区 · 已触发 2 次 · 最近 08:44</div>
+            </div>
+            <div class="setting-row__control">
+                <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+            </div>
+        </div>
+        <div class="rule-row">
+            <div class="rule-row__meta">
+                <div class="rule-row__name">土壤含水率 &lt; 45% → 开启对应滴灌阀 20 分钟</div>
+                <div class="rule-row__sub">作用：A / C 区 · 已触发 1 次 · 最近 08:49</div>
+            </div>
+            <div class="setting-row__control">
+                <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+            </div>
+        </div>
+        <div class="rule-row">
+            <div class="rule-row__meta">
+                <div class="rule-row__name">室内温度 &gt; 30°C → 打开顶窗 + 遮阳帘</div>
+                <div class="rule-row__sub">作用：A / B 区 · 已触发 0 次</div>
+            </div>
+            <div class="setting-row__control">
+                <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+            </div>
+        </div>
+        <div class="rule-row">
+            <div class="rule-row__meta">
+                <div class="rule-row__name">夜间 22:00–06:00 → 补光灯强制关闭</div>
+                <div class="rule-row__sub">作用：全部地块 · 已触发 7 次</div>
+            </div>
+            <div class="setting-row__control">
+                <label class="switch"><input type="checkbox"><span class="switch__track"></span></label>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 设备详情弹窗 -->
+<div class="modal fade" id="deviceModal" tabindex="-1" role="dialog" aria-labelledby="deviceModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="deviceModalTitle">设备详情</h4>
+            </div>
+            <div class="modal-body">
+                <div class="device-detail__head">
+                    <span class="device-detail__icon" id="deviceModalIcon">
+                        <svg class="icon" aria-hidden="true"><use href="#i-pump"></use></svg>
+                    </span>
+                    <div style="flex:1 1 auto;min-width:0">
+                        <div id="deviceModalName" style="font-size:14px;font-weight:650;color:var(--ink)">1 号灌溉泵</div>
+                        <div class="setting-row__desc" id="deviceModalType">离心水泵 · A 区</div>
+                    </div>
+                    <span class="pill pill--ok" id="deviceModalStatus">运行中</span>
+                </div>
+
+                <div class="device-detail__grid">
+                    <div class="device-detail__cell"><span>额定功率</span><b id="deviceModalPower">1.1 kW</b></div>
+                    <div class="device-detail__cell"><span>今日运行</span><b id="deviceModalRuntime">2h18m</b></div>
+                    <div class="device-detail__cell"><span>信号强度</span><b id="deviceModalSignal">4 / 4</b></div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-row__body">
+                        <div class="setting-row__name">即时开关</div>
+                        <div class="setting-row__desc">指令下发后 3 秒内回执</div>
+                    </div>
+                    <div class="setting-row__control">
+                        <label class="switch"><input type="checkbox" id="deviceModalSwitch"><span class="switch__track"></span></label>
+                    </div>
+                </div>
+
+                <div class="chart chart--sm mt-14" id="deviceChart"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-agri btn-ghost btn-sm" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn-agri btn-sm" id="deviceRestart">
+                    <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+                    重启设备
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

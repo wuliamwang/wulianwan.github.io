@@ -1,0 +1,255 @@
+<!--@{"title":"数据分析","nav":"analysis","crumb":"数据分析","desc":"数据分析：用水量、墒情热力图、地块排行与自动洞察，支持多时间维度对比与 CSV 导出。","lib":["highcharts"]}@-->
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ceab4"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+    </defs>
+</svg>
+
+<section class="page-head reveal">
+    <div>
+        <p class="page-head__eyebrow">
+            <svg class="icon" aria-hidden="true"><use href="#i-analysis"></use></svg>
+            DATA INSIGHT · 数据截至 11-20 09:30
+        </p>
+        <h1>数据<span class="accent">分析</span></h1>
+        <p class="page-head__desc">
+            把灌溉记录、墒情曲线与产量数据放在同一张坐标系里：用水是否用在关键期、
+            哪块地最费水、节水空间还有多少，都能在这里找到答案。
+        </p>
+    </div>
+    <div class="page-head__actions">
+        <div class="segmented" id="rangeSwitch" role="group" aria-label="统计范围">
+            <button type="button" class="segmented__btn is-active" data-range="week">本周</button>
+            <button type="button" class="segmented__btn" data-range="month">本月</button>
+            <button type="button" class="segmented__btn" data-range="season">本季</button>
+        </div>
+        <button type="button" class="btn-agri btn-ghost btn-sm" id="exportReport">
+            <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+            导出报告
+        </button>
+    </div>
+</section>
+
+<!-- ==================================================================
+     汇总指标
+     ================================================================== -->
+<div class="analysis-kpis">
+    <article class="card kpi card--spot card--hover reveal" style="--delay:.04s">
+        <div class="kpi__top">
+            <span class="kpi__icon is-water"><svg class="icon" aria-hidden="true"><use href="#i-water"></use></svg></span>
+            <span class="kpi__label">累计灌溉用水</span>
+        </div>
+        <div class="kpi__value"><span data-count="246.4" data-decimals="1">0</span><small>m³</small></div>
+        <div class="kpi__foot">
+            <span class="kpi__delta is-down"><svg class="icon" aria-hidden="true"><use href="#i-trend-down"></use></svg>12.6%</span>
+            <span class="kpi__note">较上周</span>
+        </div>
+    </article>
+
+    <article class="card kpi card--spot card--hover reveal" style="--delay:.08s">
+        <div class="kpi__top">
+            <span class="kpi__icon"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg></span>
+            <span class="kpi__label">平均节水率</span>
+        </div>
+        <div class="kpi__value"><span data-count="28.4" data-decimals="1">0</span><small>%</small></div>
+        <div class="kpi__foot">
+            <span class="kpi__delta is-up"><svg class="icon" aria-hidden="true"><use href="#i-trend-up"></use></svg>4.2%</span>
+            <span class="kpi__note">对比漫灌基准</span>
+        </div>
+    </article>
+
+    <article class="card kpi card--spot card--hover reveal" style="--delay:.12s">
+        <div class="kpi__top">
+            <span class="kpi__icon is-gold"><svg class="icon" aria-hidden="true"><use href="#i-droplet"></use></svg></span>
+            <span class="kpi__label">单位产量耗水</span>
+        </div>
+        <div class="kpi__value"><span data-count="12.6" data-decimals="1">0</span><small>m³/t</small></div>
+        <div class="kpi__foot">
+            <span class="kpi__delta is-down"><svg class="icon" aria-hidden="true"><use href="#i-trend-down"></use></svg>8.1%</span>
+            <span class="kpi__note">行业均值 15.8</span>
+        </div>
+    </article>
+
+    <article class="card kpi card--spot card--hover reveal" style="--delay:.16s">
+        <div class="kpi__top">
+            <span class="kpi__icon is-soil"><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg></span>
+            <span class="kpi__label">本周灌溉次数</span>
+        </div>
+        <div class="kpi__value"><span data-count="42">0</span><small>次</small></div>
+        <div class="kpi__foot">
+            <span class="kpi__delta is-flat"><svg class="icon" aria-hidden="true"><use href="#i-pause"></use></svg>持平</span>
+            <span class="kpi__note">自动 34 / 手动 8</span>
+        </div>
+    </article>
+</div>
+
+<!-- ==================================================================
+     用水与温度组合图 + 用水构成
+     ================================================================== -->
+<div class="analysis-main">
+    <section class="card card--spot reveal" style="--delay:.2s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">用水量与地温趋势</h3>
+                <p class="card__sub" id="comboSub">近 7 天 · 柱状为日用水量，折线为日均 10cm 地温</p>
+            </div>
+            <div class="card__tools">
+                <span class="pill pill--water"><i class="pill__dot"></i>相关度 0.78</span>
+                <button type="button" class="icon-btn" data-refresh aria-label="刷新图表">
+                    <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+                </button>
+            </div>
+        </div>
+        <div class="card__body">
+            <div class="chart chart--lg" id="waterTempChart"></div>
+        </div>
+        <div class="card__foot">
+            <span>地温每升高 1°C，日用水量平均增加 2.4 m³（r = 0.78）</span>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.24s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">用水构成</h3>
+                <p class="card__sub">按地块统计 · 单位 m³</p>
+            </div>
+        </div>
+        <div class="card__body">
+            <div class="chart" id="shareChart" style="height:236px"></div>
+            <div class="legend mt-8" id="shareLegend" style="justify-content:center"></div>
+        </div>
+    </section>
+</div>
+
+<!-- ==================================================================
+     热力图 + 排行 + 洞察
+     ================================================================== -->
+<div class="analysis-sub">
+    <section class="card reveal" style="--delay:.28s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">土壤墒情热力图</h3>
+                <p class="card__sub">近 14 天 · 颜色越深含水率越高</p>
+            </div>
+            <span class="pill pill--muted" id="heatmapChip">适宜 60–75%</span>
+        </div>
+        <div class="card__body">
+            <div id="heatmapWrap">
+                <div class="heatmap" id="heatmap" style="--cols:14"></div>
+                <div class="heatmap-axis" id="heatmapAxis" style="--cols:14"></div>
+            </div>
+            <div class="legend mt-14">
+                <span class="legend__item is-muted"><i class="legend__swatch" style="background:rgba(46,207,143,.18)"></i>低</span>
+                <span class="legend__item is-brand"><i class="legend__swatch" style="background:rgba(20,131,90,.75)"></i>高</span>
+                <span class="legend__item" style="margin-left:auto">数据源：SN-A01 / B01 / C01 / D01</span>
+            </div>
+            <div class="source-bar mt-14">
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-database"></use></svg>14 天均值 <b>62.4%</b></span>
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>低于下限 <b>3 次</b></span>
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-droplet"></use></svg>补灌 <b>2 次</b></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.32s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">地块用水排行</h3>
+                <p class="card__sub">本周累计用水与计划偏差</p>
+            </div>
+        </div>
+        <div class="card__body">
+            <div class="rank" id="waterRank"></div>
+            <div class="source-bar mt-18">
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-gauge"></use></svg>单亩用水 <b>6.8 m³/亩</b></span>
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg>计划偏差 <b>+4.2%</b></span>
+            </div>
+        </div>
+        <div class="card__foot">
+            <span>C 区小麦面积最大，单亩用水反而最低</span>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.36s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">自动洞察</h3>
+                <p class="card__sub">规则 + 阈值触发的分析结论</p>
+            </div>
+            <span class="pill pill--gold"><i class="pill__dot"></i>4 条</span>
+        </div>
+        <div class="card__body">
+            <div class="stack-sm">
+                <div class="insight">
+                    <span class="insight__icon"><svg class="icon" aria-hidden="true"><use href="#i-trend-down"></use></svg></span>
+                    <div>
+                        <div class="insight__title">节水率连续 3 周上升</div>
+                        <p class="insight__text">近三周节水率 <b>24.1% → 26.8% → 28.4%</b>，主要来自 C 区喷灌改为分次灌溉。</p>
+                    </div>
+                </div>
+                <div class="insight">
+                    <span class="insight__icon is-water"><svg class="icon" aria-hidden="true"><use href="#i-droplet"></use></svg></span>
+                    <div>
+                        <div class="insight__title">C 区夜间灌溉损耗偏高</div>
+                        <p class="insight__text">夜间 22:00 后喷灌的无效蒸发损耗约 <b>11%</b>，建议调整到清晨 05:00–07:00。</p>
+                    </div>
+                </div>
+                <div class="insight">
+                    <span class="insight__icon is-gold"><svg class="icon" aria-hidden="true"><use href="#i-sun"></use></svg></span>
+                    <div>
+                        <div class="insight__title">A 区补光时长与产量正相关</div>
+                        <p class="insight__text">补光 5.5h/日 的处理组单产高 <b>6.2%</b>，建议维持当前策略并监测电费。</p>
+                    </div>
+                </div>
+                <div class="insight">
+                    <span class="insight__icon"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg></span>
+                    <div>
+                        <div class="insight__title">B 区夜间湿度持续偏高</div>
+                        <p class="insight__text">连续 5 天 22:00–02:00 湿度 <b>&gt; 90%</b>，灰霉病风险上升，建议增加夜间通风。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ==================================================================
+     明细表
+     ================================================================== -->
+<section class="card reveal" style="--delay:.4s">
+    <div class="card__head">
+        <div class="card__titles">
+            <h3 class="card__title">灌溉明细</h3>
+            <p class="card__sub">按日汇总，可导出为 CSV 交给 Excel 继续分析</p>
+        </div>
+        <div class="card__tools">
+            <span class="pill pill--muted">近 7 天</span>
+            <button type="button" class="btn-agri btn-soft btn-sm" id="exportTable">
+                <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+                CSV
+            </button>
+        </div>
+    </div>
+    <div class="card__body card__body--flush">
+        <div class="table-wrap">
+            <table class="table-agri" id="detailTable">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th class="num">用水量</th>
+                        <th class="num">灌溉次数</th>
+                        <th class="num">平均含水率</th>
+                        <th class="num">节水率</th>
+                        <th>主要作业</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody id="detailBody"></tbody>
+            </table>
+        </div>
+    </div>
+</section>

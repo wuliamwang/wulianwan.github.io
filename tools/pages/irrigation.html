@@ -1,0 +1,362 @@
+<!--@{"title":"智能灌溉","nav":"irrigation","crumb":"智能灌溉","desc":"智能灌溉决策：基于土壤墒情、蒸散量与降雨预报生成灌溉建议，支持阈值设定、计划编排与一键执行。","lib":["highcharts","slider"]}@-->
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#7fd9ff"></stop>
+            <stop offset="55%" stop-color="#2ecf8f"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+        <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ceab4"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+    </defs>
+</svg>
+
+<section class="page-head reveal">
+    <div>
+        <p class="page-head__eyebrow">
+            <svg class="icon" aria-hidden="true"><use href="#i-irrigation"></use></svg>
+            IRRIGATION DECISION · 决策引擎 v2.3
+        </p>
+        <h1>智能<span class="accent">灌溉</span></h1>
+        <p class="page-head__desc">
+            把「什么时候浇、浇多少、浇哪一块」交给数据：墒情缺口 × 作物系数 × 蒸散量，
+            再按 24 小时降雨概率折减，最终给出一份可直接执行的灌溉工单。
+        </p>
+    </div>
+    <div class="page-head__actions">
+        <span class="live-chip" id="engineChip"><span class="live-chip__dot"></span><span class="live-chip__text">决策引擎运行中</span></span>
+        <button type="button" class="btn-agri btn-ghost btn-sm" id="recalcBtn">
+            <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+            重新计算
+        </button>
+    </div>
+</section>
+
+<!-- ==================================================================
+     决策结论 + 紧迫度仪表
+     ================================================================== -->
+<div class="irr-top">
+    <section class="decision-hero reveal" style="--delay:.04s">
+        <div class="decision-hero__main">
+            <span class="decision-hero__label"><span class="dot"></span>今日决策 · 10:00 更新</span>
+            <h2 class="decision-hero__title" id="decisionTitle">C 区 · 露天小麦<em>建议今日 15:30 灌溉</em></h2>
+            <p class="decision-hero__desc" id="decisionDesc">
+                土壤含水率低于设定下限，且未来 24 小时无有效降雨，建议按 104 m³ 分两次补灌；
+                首轮 60 m³ 于 15:30 开始，可覆盖 0–30cm 根层。
+            </p>
+            <div class="decision-hero__stats">
+                <div class="decision-hero__stat">
+                    <b id="decisionVolume">104.3<small>m³</small></b>
+                    <span>建议水量</span>
+                </div>
+                <div class="decision-hero__stat">
+                    <b id="decisionDuration">372<small>分钟</small></b>
+                    <span>预计时长</span>
+                </div>
+                <div class="decision-hero__stat">
+                    <b id="decisionDeficit">16.8<small>%</small></b>
+                    <span>含水率缺口</span>
+                </div>
+                <div class="decision-hero__stat">
+                    <b id="decisionSaved">28.4<small>%</small></b>
+                    <span>较漫灌节水</span>
+                </div>
+            </div>
+            <div class="hero__actions">
+                <button type="button" class="btn-agri btn-lg" id="quickIrrigate">
+                    <svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg>
+                    立即执行建议
+                </button>
+                <a class="btn-agri btn-hero-ghost btn-lg" href="monitor.html">
+                    查看墒情曲线
+                    <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+                </a>
+            </div>
+        </div>
+
+        <div class="decision-hero__gauge">
+            <div class="gauge" id="decisionGauge" style="--p:72">
+                <svg class="gauge__svg" viewBox="0 0 200 108" aria-hidden="true">
+                    <path class="gauge__track" d="M20 100 A80 80 0 0 1 180 100"></path>
+                    <path class="gauge__fill" d="M20 100 A80 80 0 0 1 180 100"></path>
+                </svg>
+                <div class="gauge__readout"><span id="gaugeValue">72</span><small>分</small></div>
+                <div class="gauge__cap">灌溉紧迫度</div>
+            </div>
+            <p class="gauge__tip">分值越高越紧迫<br>≥ 70 建议 6 小时内执行</p>
+        </div>
+    </section>
+
+    <section class="card threshold-panel reveal" style="--delay:.1s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">灌溉阈值</h3>
+                <p class="card__sub">低于下限自动启动，高于上限自动停止</p>
+            </div>
+            <label class="switch" title="自动灌溉开关">
+                <input type="checkbox" id="autoSwitch" checked>
+                <span class="switch__track"></span>
+            </label>
+        </div>
+        <div class="card__body">
+            <div class="threshold-value">
+                <div class="threshold-value__num"><span id="thresholdText">45 – 72</span><small>%RH</small></div>
+                <span class="threshold-value__hint">适宜区间</span>
+            </div>
+
+            <div class="nstSlider" id="moistureSlider"
+                 data-range_min="30" data-range_max="90" data-cur_min="45" data-cur_max="72">
+                <div class="bar" id="sliderBar"></div>
+                <div class="leftGrip" id="sliderLeft"></div>
+                <div class="rightGrip" id="sliderRight"></div>
+                <div class="leftLabel nstSlider-val" id="sliderLeftLabel"></div>
+                <div class="rightLabel nstSlider-val" id="sliderRightLabel"></div>
+            </div>
+
+            <div class="row row--flex irr-threshold-stats">
+                <div class="col-xs-6">
+                    <div class="farm-cell">
+                        <span>低于下限的地块</span>
+                        <b id="triggerCount">2<small>个</small></b>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <div class="farm-cell">
+                        <span>预计节水</span>
+                        <b id="savedEstimate">28.4<small>%</small></b>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notice mt-14">
+                <svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>
+                <p class="notice__text">
+                    当前策略：含水率低于 <b id="autoLowTip">45%</b> 自动开启对应地块阀门，
+                    到达 <b id="autoHighTip">72%</b> 停止。单次灌溉不超过 30 m³。
+                </p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ==================================================================
+     灌溉计划 + 手动执行
+     ================================================================== -->
+<div class="irr-mid">
+    <section class="card reveal" style="--delay:.14s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">今日灌溉计划</h3>
+                <p class="card__sub">按时间排序，执行结果自动回写</p>
+            </div>
+            <div class="card__tools">
+                <span class="pill pill--muted" id="planSummary">4 项 · 已完成 2</span>
+                <button type="button" class="btn-agri btn-soft btn-sm" data-toggle="modal" data-target="#planModal">
+                    <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+                    新增
+                </button>
+            </div>
+        </div>
+        <div class="card__body card__body--flush">
+            <div class="plan-list" id="planList" style="padding:6px 14px 14px"></div>
+        </div>
+        <div class="card__foot">
+            <span>计划由决策引擎生成，可手动调整时间与水量</span>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.18s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">手动执行</h3>
+                <p class="card__sub">选择地块与水量，立即下发开阀指令</p>
+            </div>
+            <span class="pill pill--water" id="execMode"><i class="pill__dot"></i>手动模式</span>
+        </div>
+        <div class="card__body">
+            <div class="exec">
+                <div class="exec__target" id="execTargets">
+                    <button type="button" class="exec__chip is-active" data-field="C">
+                        <span class="dot" style="background:#d9c46a"></span><b>C 区小麦</b>
+                    </button>
+                    <button type="button" class="exec__chip" data-field="A">
+                        <span class="dot" style="background:#2ecf8f"></span><b>A 区番茄</b>
+                    </button>
+                    <button type="button" class="exec__chip" data-field="B">
+                        <span class="dot" style="background:#5ad6a8"></span><b>B 区黄瓜</b>
+                    </button>
+                    <button type="button" class="exec__chip" data-field="D">
+                        <span class="dot" style="background:#ef8b78"></span><b>D 区草莓</b>
+                    </button>
+                </div>
+
+                <div class="exec__bar">
+                    <div class="exec__bar-head"><span>灌溉水量</span><b id="execVolume">26.4 m³</b></div>
+                    <input class="range" id="volumeRange" type="range" min="0" max="120" step="0.2" value="26.4" aria-label="灌溉水量">
+                    <div class="exec__bar-head" style="margin-top:2px">
+                        <span>预计时长</span><b id="execDuration">94 分钟</b>
+                    </div>
+                </div>
+
+                <div class="irrigating" id="irrigating">
+                    <span class="irrigating__icon"><svg class="icon" aria-hidden="true"><use href="#i-droplet"></use></svg></span>
+                    <div class="irrigating__body">
+                        <div class="irrigating__title" id="irrigatingTitle">待执行 · C 区露天小麦</div>
+                        <p class="irrigating__text" id="irrigatingText">开阀后将实时回传流量与累计水量</p>
+                        <div class="meter mt-8"><span class="meter__bar" id="irrigatingBar" style="width:0%"></span></div>
+                    </div>
+                    <span class="pill pill--muted" id="irrigatingPill">就绪</span>
+                </div>
+
+                <button type="button" class="btn-agri btn-lg btn-block" id="execBtn">
+                    <svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg>
+                    开始灌溉
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ==================================================================
+     决策明细 + 水源
+     ================================================================== -->
+<div class="irr-bottom">
+    <section class="card reveal" style="--delay:.22s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">各地块决策明细</h3>
+                <p class="card__sub">缺口 = 目标含水率 − 当前含水率</p>
+            </div>
+            <button type="button" class="icon-btn" data-refresh aria-label="刷新决策">
+                <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+            </button>
+        </div>
+        <div class="card__body card__body--flush">
+            <div class="table-wrap">
+                <table class="table-agri">
+                    <thead>
+                        <tr>
+                            <th>地块</th>
+                            <th>作物 / 生育期</th>
+                            <th class="num">当前含水率</th>
+                            <th class="num">目标</th>
+                            <th class="num">缺口</th>
+                            <th class="num">建议水量</th>
+                            <th>紧迫度</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="decisionBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card__foot">
+            <span>决策参数：作物系数 Kc、参考蒸散量 ET₀ 3.2 mm、降雨概率 10%</span>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.26s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">水源与蓄水池</h3>
+                <p class="card__sub">1 号蓄水池 · 容量 200 m³</p>
+            </div>
+            <span class="pill pill--water"><i class="pill__dot"></i>供水正常</span>
+        </div>
+        <div class="card__body">
+            <div class="tank-wrap">
+                <div class="tank">
+                    <div class="tank__water" style="--level:68%">
+                        <svg class="tank__wave" viewBox="0 0 200 18" preserveAspectRatio="none" aria-hidden="true">
+                            <path d="M0 9 Q25 2 50 9 T100 9 T150 9 T200 9 V18 H0 Z"></path>
+                        </svg>
+                        <svg class="tank__wave tank__wave--back" viewBox="0 0 200 18" preserveAspectRatio="none" aria-hidden="true">
+                            <path d="M0 9 Q25 2 50 9 T100 9 T150 9 T200 9 V18 H0 Z"></path>
+                        </svg>
+                    </div>
+                    <div class="tank__scale"><span>200</span><span>150</span><span>100</span><span>50</span></div>
+                    <div class="tank__value">136<small>m³</small></div>
+                </div>
+                <div class="tank-meta">
+                    <div class="tank-meta__row"><span class="tank-meta__label">当前水位</span><span class="tank-meta__value">68<small>%</small></span></div>
+                    <div class="tank-meta__row"><span class="tank-meta__label">今日取水</span><span class="tank-meta__value">22.3<small>m³</small></span></div>
+                    <div class="tank-meta__row"><span class="tank-meta__label">剩余配额</span><span class="tank-meta__value">77.7<small>m³</small></span></div>
+                    <div class="tank-meta__row"><span class="tank-meta__label">补给时间</span><span class="tank-meta__value">明日 04:00</span></div>
+                </div>
+            </div>
+
+            <div class="mt-18">
+                <div class="source-row">
+                    <span class="source-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-pump"></use></svg></span>
+                    <div class="source-row__meta">
+                        <div class="source-row__name">1 号灌溉泵</div>
+                        <div class="source-row__sub">离心泵 · 1.1 kW · 运行 2h18m</div>
+                    </div>
+                    <span class="source-row__value">18.4 m³/h</span>
+                </div>
+                <div class="source-row">
+                    <span class="source-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-valve"></use></svg></span>
+                    <div class="source-row__meta">
+                        <div class="source-row__name">A 区滴灌阀</div>
+                        <div class="source-row__sub">DN50 电磁阀 · 已开启</div>
+                    </div>
+                    <span class="source-row__value">6.2 m³/h</span>
+                </div>
+                <div class="source-row">
+                    <span class="source-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-droplet"></use></svg></span>
+                    <div class="source-row__meta">
+                        <div class="source-row__name">水肥一体机</div>
+                        <div class="source-row__sub">EC 1.82 mS/cm · pH 6.5</div>
+                    </div>
+                    <span class="source-row__value">配比正常</span>
+                </div>
+            </div>
+
+            <div class="source-bar mt-14">
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-water"></use></svg>本轮节水 <b>28.4%</b></span>
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>下次决策 <b>10:10</b></span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- 新增计划弹窗 -->
+<div class="modal fade" id="planModal" tabindex="-1" role="dialog" aria-labelledby="planModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="planModalTitle">新增灌溉计划</h4>
+            </div>
+            <div class="modal-body">
+                <label class="field">
+                    <span class="field__label">地块</span>
+                    <select class="select" id="planField">
+                        <option value="A">A 区 · 番茄温室</option>
+                        <option value="B">B 区 · 黄瓜大棚</option>
+                        <option value="C" selected>C 区 · 露天小麦</option>
+                        <option value="D">D 区 · 草莓高架</option>
+                    </select>
+                </label>
+                <label class="field">
+                    <span class="field__label">开始时间</span>
+                    <input class="input" id="planTime" type="time" value="15:30">
+                </label>
+                <label class="field">
+                    <span class="field__label">灌溉水量 <span class="field__hint">m³</span></span>
+                    <input class="input" id="planVolume" type="number" min="1" max="120" step="0.1" value="20">
+                </label>
+                <div class="notice mt-14">
+                    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+                    <p class="notice__text">单次灌溉上限 30 m³，超出需二次确认；计划将在开始前 10 分钟自动校验墒情。</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-agri btn-ghost btn-sm" data-dismiss="modal">取消</button>
+                <button type="button" class="btn-agri btn-sm" id="planConfirm">保存计划</button>
+            </div>
+        </div>
+    </div>
+</div>

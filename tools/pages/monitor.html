@@ -1,0 +1,347 @@
+<!--@{"title":"环境监测","nav":"monitor","crumb":"环境监测","desc":"环境监测：六项环境指标实时读数、多指标趋势对比、12 路传感器在线状态与数据流。","lib":["highcharts"]}@-->
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ceab4"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+    </defs>
+</svg>
+
+<section class="page-head reveal">
+    <div>
+        <p class="page-head__eyebrow">
+            <svg class="icon" aria-hidden="true"><use href="#i-monitor"></use></svg>
+            ENVIRONMENT MONITORING · 采集频率 5 秒
+        </p>
+        <h1>环境<span class="accent">监测</span></h1>
+        <p class="page-head__desc">
+            6 项环境指标、12 路传感器覆盖 4 个地块。所有读数经边缘网关汇聚后写入时序库，
+            异常值在写入前即触发规则校验。
+        </p>
+    </div>
+    <div class="page-head__actions">
+        <div class="segmented" id="fieldSwitch" role="group" aria-label="选择地块">
+            <button type="button" class="segmented__btn is-active" data-field="all">全园</button>
+            <button type="button" class="segmented__btn" data-field="A">A 区</button>
+            <button type="button" class="segmented__btn" data-field="B">B 区</button>
+            <button type="button" class="segmented__btn" data-field="C">C 区</button>
+            <button type="button" class="segmented__btn" data-field="D">D 区</button>
+        </div>
+        <button type="button" class="btn-agri btn-ghost btn-sm" id="exportSensors">
+            <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+            导出数据
+        </button>
+    </div>
+</section>
+
+<!-- ==================================================================
+     六项指标卡
+     ================================================================== -->
+<div class="mon-grid">
+    <article class="card mon-card card--spot is-active reveal" data-metric-card="soilMoisture" style="--delay:.04s" tabindex="0" role="button" aria-label="查看土壤含水率趋势">
+        <div class="mon-card__head">
+            <span class="mon-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-water"></use></svg></span>
+            <span class="mon-card__label">土壤含水率</span>
+        </div>
+        <div class="mon-card__value" data-value="soilMoisture">61.4<small>%</small></div>
+        <div class="sparkline mon-card__spark" data-spark="soilMoisture" aria-hidden="true"></div>
+        <div class="mon-card__foot">
+            <span class="mon-card__range">适宜 60–75%</span>
+            <span class="pill pill--ok" data-tone="soilMoisture"><i class="pill__dot"></i>适宜</span>
+        </div>
+    </article>
+
+    <article class="card mon-card card--spot reveal" data-metric-card="soilTemp" style="--delay:.08s" tabindex="0" role="button" aria-label="查看土壤温度趋势">
+        <div class="mon-card__head">
+            <span class="mon-card__icon is-soil"><svg class="icon" aria-hidden="true"><use href="#i-thermometer"></use></svg></span>
+            <span class="mon-card__label">土壤温度</span>
+        </div>
+        <div class="mon-card__value" data-value="soilTemp">18.6<small>°C</small></div>
+        <div class="sparkline mon-card__spark" data-spark="soilTemp" aria-hidden="true"></div>
+        <div class="mon-card__foot">
+            <span class="mon-card__range">适宜 15–22°C</span>
+            <span class="pill pill--ok" data-tone="soilTemp"><i class="pill__dot"></i>正常</span>
+        </div>
+    </article>
+
+    <article class="card mon-card card--spot reveal" data-metric-card="airTemp" style="--delay:.12s" tabindex="0" role="button" aria-label="查看空气温度趋势">
+        <div class="mon-card__head">
+            <span class="mon-card__icon is-gold"><svg class="icon" aria-hidden="true"><use href="#i-thermometer"></use></svg></span>
+            <span class="mon-card__label">空气温度</span>
+        </div>
+        <div class="mon-card__value" data-value="airTemp">24.2<small>°C</small></div>
+        <div class="sparkline mon-card__spark" data-spark="airTemp" aria-hidden="true"></div>
+        <div class="mon-card__foot">
+            <span class="mon-card__range">适宜 22–28°C</span>
+            <span class="pill pill--ok" data-tone="airTemp"><i class="pill__dot"></i>正常</span>
+        </div>
+    </article>
+
+    <article class="card mon-card card--spot reveal" data-metric-card="airHumidity" style="--delay:.16s" tabindex="0" role="button" aria-label="查看空气湿度趋势">
+        <div class="mon-card__head">
+            <span class="mon-card__icon is-water"><svg class="icon" aria-hidden="true"><use href="#i-droplet"></use></svg></span>
+            <span class="mon-card__label">空气湿度</span>
+        </div>
+        <div class="mon-card__value" data-value="airHumidity">66<small>%</small></div>
+        <div class="sparkline mon-card__spark" data-spark="airHumidity" aria-hidden="true"></div>
+        <div class="mon-card__foot">
+            <span class="mon-card__range">适宜 60–80%</span>
+            <span class="pill pill--ok" data-tone="airHumidity"><i class="pill__dot"></i>适宜</span>
+        </div>
+    </article>
+
+    <article class="card mon-card card--spot reveal" data-metric-card="light" style="--delay:.2s" tabindex="0" role="button" aria-label="查看光照强度趋势">
+        <div class="mon-card__head">
+            <span class="mon-card__icon is-gold"><svg class="icon" aria-hidden="true"><use href="#i-sun"></use></svg></span>
+            <span class="mon-card__label">光照强度</span>
+        </div>
+        <div class="mon-card__value" data-value="light">21,028<small>lx</small></div>
+        <div class="sparkline mon-card__spark" data-spark="light" aria-hidden="true"></div>
+        <div class="mon-card__foot">
+            <span class="mon-card__range">充足 ≥ 15 000 lx</span>
+            <span class="pill pill--gold" data-tone="light"><i class="pill__dot"></i>充足</span>
+        </div>
+    </article>
+
+    <article class="card mon-card card--spot reveal" data-metric-card="co2" style="--delay:.24s" tabindex="0" role="button" aria-label="查看二氧化碳浓度趋势">
+        <div class="mon-card__head">
+            <span class="mon-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-cloud"></use></svg></span>
+            <span class="mon-card__label">CO₂ 浓度</span>
+        </div>
+        <div class="mon-card__value" data-value="co2">620<small>ppm</small></div>
+        <div class="sparkline mon-card__spark" data-spark="co2" aria-hidden="true"></div>
+        <div class="mon-card__foot">
+            <span class="mon-card__range">适宜 400–800 ppm</span>
+            <span class="pill pill--ok" data-tone="co2"><i class="pill__dot"></i>正常</span>
+        </div>
+    </article>
+</div>
+
+<!-- ==================================================================
+     多指标趋势 + 实时数据流
+     ================================================================== -->
+<div class="mon-chart-grid">
+    <section class="card card--spot reveal" style="--delay:.28s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title" id="trendTitle">土壤含水率 · 近 24 小时</h3>
+                <p class="card__sub" id="trendSub">A 区番茄温室对比全园平均值，绿色带为目标区间</p>
+            </div>
+            <div class="card__tools">
+                <div class="segmented" id="rangeSwitch" role="group" aria-label="时间范围">
+                    <button type="button" class="segmented__btn is-active" data-range="24h">24 小时</button>
+                    <button type="button" class="segmented__btn" data-range="7d">7 天</button>
+                </div>
+                <button type="button" class="icon-btn" data-refresh aria-label="刷新趋势">
+                    <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+                </button>
+            </div>
+        </div>
+        <div class="card__body">
+            <div class="chart chart--xl" id="metricTrend"></div>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.32s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">实时数据流</h3>
+                <p class="card__sub">MQTT 上行报文，倒序展示</p>
+            </div>
+            <span class="pill pill--ok"><i class="pill__dot"></i>接收中</span>
+        </div>
+        <div class="card__body card__body--tight">
+            <div class="stream" id="streamList">
+                <div class="stream__row">
+                    <span class="stream__time">08:52:14</span>
+                    <span class="stream__tag">SN-A01</span>
+                    <span class="stream__val">61.4</span>
+                    <span class="stream__unit">%</span>
+                </div>
+            </div>
+        </div>
+        <div class="card__foot">
+            <span>报文格式 JSON · QoS 1 · 保留最近 26 条</span>
+        </div>
+    </section>
+</div>
+
+<!-- ==================================================================
+     传感器台账 + 链路健康
+     ================================================================== -->
+<div class="mon-lower">
+    <section class="card reveal" style="--delay:.36s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">传感器台账</h3>
+                <p class="card__sub">共 12 路，点击行可查看单点曲线</p>
+            </div>
+            <div class="card__tools">
+                <div class="search-box">
+                    <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+                    <input class="input" id="sensorSearch" type="search" placeholder="搜索编号 / 地块" style="width:158px">
+                </div>
+                <div class="segmented" id="sensorFilter" role="group" aria-label="状态筛选">
+                    <button type="button" class="segmented__btn is-active" data-status="all">全部</button>
+                    <button type="button" class="segmented__btn" data-status="normal">正常</button>
+                    <button type="button" class="segmented__btn" data-status="abnormal">异常</button>
+                </div>
+            </div>
+        </div>
+        <div class="card__body card__body--flush">
+            <div class="table-wrap">
+                <table class="table-agri" id="sensorTable">
+                    <thead>
+                        <tr>
+                            <th>传感器</th>
+                            <th>类型</th>
+                            <th>地块</th>
+                            <th class="num">当前值</th>
+                            <th>电量</th>
+                            <th>信号</th>
+                            <th>最近上报</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensorBody">
+                        <tr>
+                            <td class="strong">SN-A01</td>
+                            <td>土壤温湿度</td>
+                            <td>A 区</td>
+                            <td class="num">61.4 %</td>
+                            <td>86%</td>
+                            <td><span class="signal-bars"><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+                            <td class="cell-nowrap">8 秒前</td>
+                            <td class="cell-actions">
+                                <button class="icon-link" aria-label="查看详情"></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.4s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">链路健康度</h3>
+                <p class="card__sub">边缘网关视角的采集质量</p>
+            </div>
+            <button type="button" class="icon-btn" data-refresh aria-label="刷新健康度">
+                <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+            </button>
+        </div>
+        <div class="card__body">
+            <div class="row row--flex">
+                <div class="col-xs-6" style="margin-bottom:14px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div class="mini-ring" style="--p:100">
+                            <svg viewBox="0 0 40 40" aria-hidden="true">
+                                <circle class="mini-ring__track" cx="20" cy="20" r="16"></circle>
+                                <circle class="mini-ring__fill" cx="20" cy="20" r="16"></circle>
+                            </svg>
+                            <span class="mini-ring__text">100%</span>
+                        </div>
+                        <div>
+                            <div class="setting-row__name">在线率</div>
+                            <div class="setting-row__desc">12 / 12 路在线</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6" style="margin-bottom:14px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div class="mini-ring" style="--p:99">
+                            <svg viewBox="0 0 40 40" aria-hidden="true">
+                                <circle class="mini-ring__track" cx="20" cy="20" r="16"></circle>
+                                <circle class="mini-ring__fill" cx="20" cy="20" r="16"></circle>
+                            </svg>
+                            <span class="mini-ring__text">99%</span>
+                        </div>
+                        <div>
+                            <div class="setting-row__name">数据完整率</div>
+                            <div class="setting-row__desc">缺失 3 条，已补传</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6" style="margin-bottom:14px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div class="mini-ring" style="--p:68">
+                            <svg viewBox="0 0 40 40" aria-hidden="true">
+                                <circle class="mini-ring__track" cx="20" cy="20" r="16"></circle>
+                                <circle class="mini-ring__fill" cx="20" cy="20" r="16"></circle>
+                            </svg>
+                            <span class="mini-ring__text">68%</span>
+                        </div>
+                        <div>
+                            <div class="setting-row__name">平均电量</div>
+                            <div class="setting-row__desc">2 路低于 50%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6" style="margin-bottom:14px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div class="mini-ring" style="--p:82">
+                            <svg viewBox="0 0 40 40" aria-hidden="true">
+                                <circle class="mini-ring__track" cx="20" cy="20" r="16"></circle>
+                                <circle class="mini-ring__fill" cx="20" cy="20" r="16"></circle>
+                            </svg>
+                            <span class="mini-ring__text">82%</span>
+                        </div>
+                        <div>
+                            <div class="setting-row__name">信号优良率</div>
+                            <div class="setting-row__desc">C 区 1 路偏弱</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notice mt-8">
+                <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+                <p class="notice__text">
+                    <b>SN-C01</b> 电量 41%、信号 2 格，建议本周内更换电池并检查天线。低电量状态下采集间隔会自动降为 30 秒。
+                </p>
+            </div>
+
+            <div class="source-bar mt-14">
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg>协议 <b>MQTT 3.1.1</b></span>
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>采集间隔 <b>5 s</b></span>
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-database"></use></svg>写入 <b>时序库</b></span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- 传感器详情弹窗 -->
+<div class="modal fade" id="sensorModal" tabindex="-1" role="dialog" aria-labelledby="sensorModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="sensorModalTitle">传感器详情</h4>
+            </div>
+            <div class="modal-body">
+                <div class="device-detail__head">
+                    <span class="device-detail__icon"><svg class="icon" aria-hidden="true"><use href="#i-database"></use></svg></span>
+                    <div>
+                        <div id="sensorModalName" style="font-size:14px;font-weight:650;color:var(--ink)">SN-A01</div>
+                        <div class="setting-row__desc" id="sensorModalType">土壤温湿度 · A 区</div>
+                    </div>
+                </div>
+                <div class="device-detail__grid">
+                    <div class="device-detail__cell"><span>当前读数</span><b id="sensorModalValue">61.4 %</b></div>
+                    <div class="device-detail__cell"><span>电量</span><b id="sensorModalBattery">86%</b></div>
+                    <div class="device-detail__cell"><span>信号强度</span><b id="sensorModalSignal">4 / 4</b></div>
+                </div>
+                <div class="chart chart--sm" id="sensorChart"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-agri btn-ghost btn-sm" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn-agri btn-sm" id="sensorExport">导出该点数据</button>
+            </div>
+        </div>
+    </div>
+</div>

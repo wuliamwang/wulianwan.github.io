@@ -1,0 +1,216 @@
+<!--@{"title":"告警中心","nav":"alarms","crumb":"告警中心","desc":"告警中心：按等级汇总环境与设备告警，支持规则配置、通知渠道与一键处置。","lib":["highcharts"]}@-->
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ceab4"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+    </defs>
+</svg>
+
+<section class="page-head reveal">
+    <div>
+        <p class="page-head__eyebrow">
+            <svg class="icon" aria-hidden="true"><use href="#i-alarm"></use></svg>
+            ALARM CENTER · 今日 6 次规则命中
+        </p>
+        <h1>告警<span class="accent">中心</span></h1>
+        <p class="page-head__desc">
+            环境越限、设备异常与通信中断统一在这里收敛。高危告警会同时推送短信与 App，
+            处理结果自动写入农事日志，形成可追溯的处置闭环。
+        </p>
+    </div>
+    <div class="page-head__actions">
+        <button type="button" class="btn-agri btn-ghost btn-sm" id="markAll">
+            <svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg>
+            全部标记处理
+        </button>
+    </div>
+</section>
+
+<!-- ==================================================================
+     汇总
+     ================================================================== -->
+<div class="alarm-summary">
+    <article class="card alarm-stat card--hover reveal" style="--delay:.04s">
+        <span class="alarm-stat__icon"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg></span>
+        <div>
+            <div class="alarm-stat__num"><span data-count="3">0</span><small> 条</small></div>
+            <div class="alarm-stat__label">未处理告警</div>
+        </div>
+    </article>
+    <article class="card alarm-stat card--hover reveal" style="--delay:.08s">
+        <span class="alarm-stat__icon is-warn"><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg></span>
+        <div>
+            <div class="alarm-stat__num"><span data-count="0">0</span><small> 条</small></div>
+            <div class="alarm-stat__label">处理中</div>
+        </div>
+    </article>
+    <article class="card alarm-stat card--hover reveal" style="--delay:.12s">
+        <span class="alarm-stat__icon is-ok"><svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg></span>
+        <div>
+            <div class="alarm-stat__num"><span data-count="2">0</span><small> 条</small></div>
+            <div class="alarm-stat__label">今日已恢复</div>
+        </div>
+    </article>
+    <article class="card alarm-stat card--hover reveal" style="--delay:.16s">
+        <span class="alarm-stat__icon is-info"><svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg></span>
+        <div>
+            <div class="alarm-stat__num"><span data-count="6">0</span><small> 次</small></div>
+            <div class="alarm-stat__label">今日规则命中</div>
+        </div>
+    </article>
+</div>
+
+<div class="alarm-layout">
+    <section class="card reveal" style="--delay:.2s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">告警列表</h3>
+                <p class="card__sub" id="alarmSub">共 5 条 · 3 条待处理</p>
+            </div>
+            <div class="card__tools">
+                <div class="search-box">
+                    <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+                    <input class="input" id="alarmSearch" type="search" placeholder="搜索告警" style="width:150px">
+                </div>
+                <div class="segmented" id="alarmFilter" role="group" aria-label="告警状态">
+                    <button type="button" class="segmented__btn is-active" data-filter="all">全部</button>
+                    <button type="button" class="segmented__btn" data-filter="open">待处理</button>
+                    <button type="button" class="segmented__btn" data-filter="resolved">已恢复</button>
+                </div>
+            </div>
+        </div>
+        <div class="card__body card__body--flush">
+            <div id="alarmList"></div>
+        </div>
+        <div class="card__foot">
+            <span>告警按「高危 → 警告 → 提示」排序，已恢复的自动置灰</span>
+        </div>
+    </section>
+
+    <div class="stack">
+        <section class="card reveal" style="--delay:.24s">
+            <div class="card__head">
+                <div class="card__titles">
+                    <h3 class="card__title">告警规则</h3>
+                    <p class="card__sub">阈值型规则，可随时启停</p>
+                </div>
+                <span class="pill pill--ok"><i class="pill__dot"></i>4 条启用</span>
+            </div>
+            <div class="card__body">
+                <div class="rule-row">
+                    <div class="rule-row__meta">
+                        <div class="rule-row__name">土壤含水率 &lt; 45%</div>
+                        <div class="rule-row__sub">持续 10 分钟触发 · 高危</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+                </div>
+                <div class="rule-row">
+                    <div class="rule-row__meta">
+                        <div class="rule-row__name">CO₂ 浓度 &gt; 1200 ppm</div>
+                        <div class="rule-row__sub">持续 5 分钟触发 · 警告</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+                </div>
+                <div class="rule-row">
+                    <div class="rule-row__meta">
+                        <div class="rule-row__name">设备电流偏差 &gt; 15%</div>
+                        <div class="rule-row__sub">立即触发 · 警告</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+                </div>
+                <div class="rule-row">
+                    <div class="rule-row__meta">
+                        <div class="rule-row__name">传感器心跳超时 &gt; 60 s</div>
+                        <div class="rule-row__sub">立即触发 · 提示</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+                </div>
+            </div>
+        </section>
+
+        <section class="card reveal" style="--delay:.32s">
+            <div class="card__head">
+                <div class="card__titles">
+                    <h3 class="card__title">通知渠道</h3>
+                    <p class="card__sub">高危告警多通道并行推送</p>
+                </div>
+            </div>
+            <div class="card__body">
+                <div class="setting-row">
+                    <div class="setting-row__body">
+                        <div class="setting-row__name">短信通知</div>
+                        <div class="setting-row__desc">值班手机 138****6721</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-row__body">
+                        <div class="setting-row__name">App 推送</div>
+                        <div class="setting-row__desc">农场管理端 · 全部等级</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch__track"></span></label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-row__body">
+                        <div class="setting-row__name">邮件日报</div>
+                        <div class="setting-row__desc">每日 18:00 汇总发送</div>
+                    </div>
+                    <label class="switch"><input type="checkbox"><span class="switch__track"></span></label>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<section class="card mt-18 reveal" style="--delay:.36s">
+    <div class="card__head">
+        <div class="card__titles">
+            <h3 class="card__title">近 7 天告警趋势</h3>
+            <p class="card__sub">按等级堆叠 · 高危告警占比逐日下降</p>
+        </div>
+        <div class="legend">
+            <span class="legend__item" style="color:var(--danger)"><i class="legend__swatch"></i>高危</span>
+            <span class="legend__item" style="color:var(--warn)"><i class="legend__swatch"></i>警告</span>
+            <span class="legend__item" style="color:var(--info)"><i class="legend__swatch"></i>提示</span>
+        </div>
+    </div>
+    <div class="card__body">
+        <div class="chart" id="alarmChart" style="height:220px"></div>
+    </div>
+</section>
+
+<!-- 告警详情 -->
+<div class="modal fade" id="alarmModal" tabindex="-1" role="dialog" aria-labelledby="alarmModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="alarmModalTitle">告警详情</h4>
+            </div>
+            <div class="modal-body">
+                <div class="device-detail__head">
+                    <span class="device-detail__icon" id="alarmModalIcon" style="color:var(--danger);background:var(--danger-soft)">
+                        <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+                    </span>
+                    <div style="flex:1 1 auto;min-width:0">
+                        <div id="alarmModalName" style="font-size:14px;font-weight:650;color:var(--ink)">土壤含水率低于下限</div>
+                        <div class="setting-row__desc" id="alarmModalMeta">C 区 · SN-C01 · 08:49</div>
+                    </div>
+                </div>
+
+                <p class="notice__text mt-14" id="alarmModalText" style="color:var(--ink-2)"></p>
+
+                <div class="timeline mt-18" id="alarmTimeline"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-agri btn-ghost btn-sm" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn-agri btn-sm" id="alarmModalResolve">
+                    <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
+                    标记已处理
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

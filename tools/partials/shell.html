@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 标记 JS 可用：进场动效只在脚本就绪时启用，避免无脚本时内容不可见 -->
+    <script>document.documentElement.classList.add("js");</script>
+    <meta name="theme-color" content="#08281d">
+    <meta name="description" content="{{DESC}}">
+    <meta name="author" content="禾语智慧农业云平台">
+    <title>{{TITLE}} · 禾语智慧农业云平台</title>
+
+    <!-- 站点图标：内联 SVG，随主题色变化 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23147a4d'/%3E%3Cpath d='M23.5 7.8c-8.6-.3-14.4 3.4-14.4 9.6 0 1.9.5 3.5 1.5 4.7 2.5-6 7.2-9.9 12.9-13.3' fill='none' stroke='%23d9f7e6' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M23.5 7.8c.8 7.9-2.9 12.9-8.8 13.4-1.6.2-3-.3-3.9-1.2' fill='none' stroke='%2378e3ab' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+{{EXTRA_HEAD}}    <link href="css/app.css" rel="stylesheet">
+    <link href="css/widgets.css" rel="stylesheet">
+    <link href="css/pages.css" rel="stylesheet">
+</head>
+<body class="{{BODY_CLASS}}">
+
+{{SPRITE}}
+
+<!-- 移动端遮罩：侧边栏展开时点击关闭 -->
+<div class="sidebar-mask" id="sidebarMask" hidden></div>
+
+<div class="app" id="app">
+
+    <!-- ==================================================================
+         侧边栏：品牌、主导航、网关状态、当前用户
+         ================================================================== -->
+    <aside class="sidebar" id="sidebar" aria-label="主导航">
+        <a class="brand" href="index.html">
+            <span class="brand__mark"><svg class="icon" aria-hidden="true"><use href="#i-logo"></use></svg></span>
+            <span class="brand__text">
+                <strong>禾语</strong>
+                <small>智慧农业云平台</small>
+            </span>
+        </a>
+
+        <button class="sidebar__toggle" id="sidebarToggle" type="button"
+                aria-label="收起侧边栏" aria-controls="sidebar" aria-expanded="true">
+            <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg>
+        </button>
+
+        <nav class="nav" aria-label="功能导航">
+{{NAV}}
+        </nav>
+
+        <div class="sidebar__foot">
+            <div class="gateway" id="gatewayCard">
+                <div class="gateway__head">
+                    <span class="gateway__dot is-live"></span>
+                    <span class="gateway__title">边缘网关</span>
+                    <span class="gateway__badge">在线</span>
+                </div>
+                <p class="gateway__meta"><span id="gatewayOnline">12</span> / <span id="gatewayTotal">12</span> 台设备已接入</p>
+                <div class="gateway__bar"><span id="gatewayBar" style="width:100%"></span></div>
+                <p class="gateway__hint"><svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg> MQTT 上行 <span id="gatewayTps">28</span> 条/分</p>
+            </div>
+
+            <a class="user-card" href="settings.html">
+                <span class="user-card__avatar">农</span>
+                <span class="user-card__meta">
+                    <strong>李沐禾</strong>
+                    <small>农场管理员</small>
+                </span>
+                <svg class="icon user-card__arrow" aria-hidden="true"><use href="#i-chevron-left"></use></svg>
+            </a>
+
+            <a class="logout-link" href="login.html">
+                <svg class="icon" aria-hidden="true"><use href="#i-logout"></use></svg>
+                <span>退出登录</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ==================================================================
+         主区域：顶部工具栏 + 页面内容
+         ================================================================== -->
+    <div class="main">
+
+        <header class="topbar">
+            <button class="topbar__menu icon-btn" id="mobileMenu" type="button"
+                    aria-label="展开导航菜单" aria-controls="sidebar">
+                <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+            </button>
+
+            <ol class="crumb" aria-label="面包屑">
+{{CRUMB}}
+            </ol>
+
+            <div class="topbar__tools">
+                <div class="weather-chip" title="寿光 · 国家农业科技园区气象站">
+                    <svg class="icon weather-chip__icon" aria-hidden="true"><use href="#i-cloud-sun"></use></svg>
+                    <span class="weather-chip__temp" id="topWeatherTemp">18°</span>
+                    <span class="weather-chip__text">多云转晴</span>
+                </div>
+
+                <span class="live-chip" id="liveChip" title="数据链路正常，实时同步中">
+                    <span class="live-chip__dot"></span>
+                    <span class="live-chip__text">实时同步</span>
+                </span>
+
+                <button class="icon-btn" id="themeToggle" type="button"
+                        aria-label="切换深色/浅色主题" aria-pressed="false" title="切换主题（T）">
+                    <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"></use></svg>
+                    <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"></use></svg>
+                </button>
+
+                <a class="icon-btn has-dot" href="alarms.html" id="notifyBtn"
+                   aria-label="查看未处理告警" title="告警中心">
+                    <svg class="icon" aria-hidden="true"><use href="#i-alarm"></use></svg>
+                    <span class="icon-btn__dot" id="notifyDot">2</span>
+                </a>
+
+                <div class="clock" id="headerClock" aria-live="off">
+                    <strong id="clockTime">08:00:00</strong>
+                    <small id="clockDate">2026/11/20 周五</small>
+                </div>
+            </div>
+        </header>
+
+        <main class="content" id="content">
+{{CONTENT}}
+        </main>
+
+        <footer class="site-foot">
+            <span>© 2026 禾语智慧农业云平台 · 山东华宇工学院 物联网工程 2402</span>
+            <span class="site-foot__right">
+                <span class="site-foot__dot"></span>
+                演示数据由本地 IoT 中间件模拟生成 · 页面渲染 <span id="footRender">0</span> ms
+            </span>
+        </footer>
+    </div>
+</div>
+
+<!-- 全局提示条容器 -->
+<div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="false"></div>
+
+<!-- 页面切换过渡遮罩 -->
+<div class="page-veil" id="pageVeil" aria-hidden="true"></div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+{{EXTRA_JS}}
+<script src="js/data.js"></script>
+<script src="js/iot-middleware.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+{{PAGE_JS}}
+</body>
+</html>

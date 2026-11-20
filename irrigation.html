@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 标记 JS 可用：进场动效只在脚本就绪时启用，避免无脚本时内容不可见 -->
+    <script>document.documentElement.classList.add("js");</script>
+    <meta name="theme-color" content="#08281d">
+    <meta name="description" content="智能灌溉决策：基于土壤墒情、蒸散量与降雨预报生成灌溉建议，支持阈值设定、计划编排与一键执行。">
+    <meta name="author" content="禾语智慧农业云平台">
+    <title>智能灌溉 · 禾语智慧农业云平台</title>
+
+    <!-- 站点图标：内联 SVG，随主题色变化 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23147a4d'/%3E%3Cpath d='M23.5 7.8c-8.6-.3-14.4 3.4-14.4 9.6 0 1.9.5 3.5 1.5 4.7 2.5-6 7.2-9.9 12.9-13.3' fill='none' stroke='%23d9f7e6' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M23.5 7.8c.8 7.9-2.9 12.9-8.8 13.4-1.6.2-3-.3-3.9-1.2' fill='none' stroke='%2378e3ab' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/jquery.nstSlider.css" rel="stylesheet">    <link href="css/app.css" rel="stylesheet">
+    <link href="css/widgets.css" rel="stylesheet">
+    <link href="css/pages.css" rel="stylesheet">
+</head>
+<body class="">
+
+<!-- 内联 SVG 图标库：<use href="#i-xxx"> 调用，不依赖外部字体或网络 -->
+<svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-logo" viewBox="0 0 24 24">
+        <path d="M20.4 3.6C11.6 3.3 4.6 7.2 4.6 14.2c0 2.1.6 3.9 1.6 5.2"/>
+        <path d="M6.2 19.4C9 12.6 14.2 8.2 20.4 3.6"/>
+        <path d="M20.4 3.6c.9 8.6-3.2 14.1-9.7 14.6-1.9.2-3.4-.4-4.5-1.4"/>
+        <path d="M11.2 14.6c1.9.6 4.1.4 6.2-.8"/>
+    </symbol>
+    <symbol id="i-dashboard" viewBox="0 0 24 24">
+        <rect x="3.2" y="3.2" width="7.4" height="8.4" rx="2"/>
+        <rect x="13.4" y="3.2" width="7.4" height="5.4" rx="2"/>
+        <rect x="13.4" y="11.6" width="7.4" height="9.2" rx="2"/>
+        <rect x="3.2" y="14.6" width="7.4" height="6.2" rx="2"/>
+    </symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24">
+        <path d="M3 12.5h3.2l2.6-6.4 3.4 12 2.6-7.2 1.8 3.6H21"/>
+        <path d="M3 20.4h18"/>
+    </symbol>
+    <symbol id="i-irrigation" viewBox="0 0 24 24">
+        <path d="M12 3.2s5.4 5.6 5.4 9.4a5.4 5.4 0 0 1-10.8 0C6.6 8.8 12 3.2 12 3.2z"/>
+        <path d="M9.4 13.2a2.6 2.6 0 0 0 2.6 2.6"/>
+        <path d="M19.4 17.2c.9 1 1.4 1.8 1.4 2.4a1.7 1.7 0 0 1-3.4 0c0-.6.5-1.4 1.4-2.4z"/>
+    </symbol>
+    <symbol id="i-device" viewBox="0 0 24 24">
+        <rect x="4.2" y="3.4" width="15.6" height="12.2" rx="2.4"/>
+        <path d="M8.6 19.4h6.8"/>
+        <path d="M12 15.6v3.8"/>
+        <path d="M8.4 7.4h4.2"/>
+    </symbol>
+    <symbol id="i-analysis" viewBox="0 0 24 24">
+        <path d="M4 20V4"/>
+        <path d="M4 20h16"/>
+        <rect x="7.4" y="12.6" width="3" height="5"/>
+        <rect x="12.4" y="9" width="3" height="8.6"/>
+        <rect x="17.4" y="5.6" width="3" height="12"/>
+    </symbol>
+    <symbol id="i-alarm" viewBox="0 0 24 24">
+        <path d="M18.2 9.6a6.2 6.2 0 1 0-12.4 0c0 5.2-2.2 6.4-2.2 6.4h16.8s-2.2-1.2-2.2-6.4z"/>
+        <path d="M9.6 19.4a2.7 2.7 0 0 0 4.8 0"/>
+        <path d="M12 2.4V4"/>
+    </symbol>
+    <symbol id="i-farm" viewBox="0 0 24 24">
+        <path d="M3.2 19.8h17.6"/>
+        <path d="M4.6 19.8V9.4l5-3.2 5 3.2v10.4"/>
+        <path d="M14.6 19.8V13h4.8v6.8"/>
+        <path d="M7.4 12.4h1.8M7.4 15.8h1.8"/>
+        <path d="M17 6.2V3.2"/>
+    </symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3.1"/>
+        <path d="M19.4 14.6a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.3a1.9 1.9 0 1 1-3.8 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a1.9 1.9 0 1 1 0-3.8h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a1.9 1.9 0 1 1 3.8 0v.2a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1h.3a1.9 1.9 0 1 1 0 3.8h-.2a1.6 1.6 0 0 0-1.5 1z"/>
+    </symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24">
+        <path d="M4.2 7h15.6M4.2 12h15.6M4.2 17h15.6"/>
+    </symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24">
+        <path d="M15 5.5L8 12l7 6.5"/>
+    </symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24">
+        <path d="M5.5 9l6.5 7 6.5-7"/>
+    </symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24">
+        <path d="M4.5 12h15"/>
+        <path d="M13.6 6.4L19.2 12l-5.6 5.6"/>
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2.6v2.2M12 19.2v2.2M4.3 4.3l1.6 1.6M18.1 18.1l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.3 19.7l1.6-1.6M18.1 5.9l1.6-1.6"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+        <path d="M20 14.4A8.4 8.4 0 0 1 9.6 4a8.6 8.6 0 1 0 10.4 10.4z"/>
+    </symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24">
+        <path d="M17.4 18.6H7a4.2 4.2 0 0 1-.7-8.4 5.6 5.6 0 0 1 10.6-1.2 4.8 4.8 0 0 1 .5 9.6z"/>
+    </symbol>
+    <symbol id="i-cloud-sun" viewBox="0 0 24 24">
+        <circle cx="8.4" cy="7.6" r="3"/>
+        <path d="M8.4 1.8v1.4M4.2 3.4l1 1M2.4 7.6h1.4M4.2 11.8l1-1"/>
+        <path d="M18 19.4H10a3.6 3.6 0 0 1-.4-7.2 4.8 4.8 0 0 1 9-.9 4.1 4.1 0 0 1-.6 8.1z"/>
+    </symbol>
+    <symbol id="i-cloud-rain" viewBox="0 0 24 24">
+        <path d="M17.4 15.4H7a4.2 4.2 0 0 1-.7-8.4A5.6 5.6 0 0 1 17 5.8a4.8 4.8 0 0 1 .4 9.6z"/>
+        <path d="M8.4 18v2.4M12.4 17.6v2.8M16.4 18v2.4"/>
+    </symbol>
+    <symbol id="i-wind" viewBox="0 0 24 24">
+        <path d="M3.4 8.6h9.2a2.6 2.6 0 1 0-2.6-2.6"/>
+        <path d="M3.4 12.4h13.2a2.6 2.6 0 1 1-2.6 2.6"/>
+        <path d="M3.4 16.2h6.2"/>
+    </symbol>
+    <symbol id="i-thermometer" viewBox="0 0 24 24">
+        <path d="M10 13.8V5.6a2 2 0 1 1 4 0v8.2a4 4 0 1 1-4 0z"/>
+        <path d="M12 9v6.4"/>
+        <circle cx="12" cy="17.4" r="1.3" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24">
+        <path d="M4.4 19.6c0-8.4 5.2-13.6 15.2-15.2.8 9.4-4.4 15.2-11.2 15.2-1.6 0-3-.6-4-1.6z"/>
+        <path d="M5.2 18.8C8.4 13.6 12.4 10 17.6 7.2"/>
+    </symbol>
+    <symbol id="i-water" viewBox="0 0 24 24">
+        <path d="M12 2.8s5.6 5.8 5.6 9.8a5.6 5.6 0 1 1-11.2 0C6.4 8.6 12 2.8 12 2.8z"/>
+        <path d="M9.2 13.6a2.8 2.8 0 0 0 2.8 2.8"/>
+    </symbol>
+    <symbol id="i-pump" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3.4"/>
+        <path d="M12 3.2v3M12 17.8v3M3.2 12h3M17.8 12h3"/>
+        <path d="M12 8.6c1.4 1.1 2.4 2.2 2.4 3.4a2.4 2.4 0 1 1-4.8 0c0-1.2 1-2.3 2.4-3.4z"/>
+    </symbol>
+    <symbol id="i-valve" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="6.8"/>
+        <path d="M12 5.2v13.6M5.2 12h13.6"/>
+        <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-fan" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="2.2"/>
+        <path d="M12 9.8c.2-3.4 1.4-5.4 3.2-5.4 1.8 0 2.8 1.8 1.8 3.6-.8 1.4-2.6 2.2-5 2.2z"/>
+        <path d="M14.2 12c3.4.2 5.4 1.4 5.4 3.2 0 1.8-1.8 2.8-3.6 1.8-1.4-.8-2.2-2.6-2.2-5z"/>
+        <path d="M12 14.2c-.2 3.4-1.4 5.4-3.2 5.4-1.8 0-2.8-1.8-1.8-3.6.8-1.4 2.6-2.2 5-2.2z"/>
+        <path d="M9.8 12c-3.4-.2-5.4-1.4-5.4-3.2 0-1.8 1.8-2.8 3.6-1.8 1.4.8 2.2 2.6 2.2 5z"/>
+    </symbol>
+    <symbol id="i-lamp" viewBox="0 0 24 24">
+        <path d="M9.4 18.4h5.2"/>
+        <path d="M10.4 21h3.2"/>
+        <path d="M12 2.8a6.2 6.2 0 0 0-3.6 11.2c.5.4.8 1 .8 1.6h5.6c0-.6.3-1.2.8-1.6A6.2 6.2 0 0 0 12 2.8z"/>
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24">
+        <rect x="2.8" y="6.4" width="12.8" height="11.2" rx="2.6"/>
+        <path d="M15.6 10.6l5.6-3v8.8l-5.6-3z"/>
+        <circle cx="7.4" cy="12" r="2"/>
+    </symbol>
+    <symbol id="i-battery" viewBox="0 0 24 24">
+        <rect x="2.6" y="7.4" width="16.4" height="9.2" rx="2.4"/>
+        <path d="M21.4 10.6v4.8"/>
+        <rect x="5" y="9.8" width="7" height="4.4" rx="1" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-signal" viewBox="0 0 24 24">
+        <path d="M4 20v-3.4M9.4 20v-6.6M14.8 20v-9.8M20.2 20V7"/>
+    </symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24">
+        <path d="M3.4 8.9a13 13 0 0 1 17.2 0"/>
+        <path d="M6.4 12.2a8.6 8.6 0 0 1 11.2 0"/>
+        <path d="M9.4 15.5a4.2 4.2 0 0 1 5.2 0"/>
+        <circle cx="12" cy="19" r=".9" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+        <path d="M12 3.2L21.6 20H2.4L12 3.2z"/>
+        <path d="M12 9.4v4.8"/>
+        <circle cx="12" cy="17" r=".9" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="M4.6 12.6l4.8 4.8 10-10.4"/>
+    </symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.8"/>
+        <path d="M8.2 12.2l2.6 2.6 5-5.2"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.6"/>
+        <path d="M12 7.4v5l3.4 2"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+        <path d="M20 11a8 8 0 0 0-13.7-4.7L4 8.5"/>
+        <path d="M4 4.5v4h4"/>
+        <path d="M4 13a8 8 0 0 0 13.7 4.7L20 15.5"/>
+        <path d="M20 19.5v-4h-4"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="6.6"/>
+        <path d="M15.8 15.8l4.6 4.6"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+        <path d="M12 3.6v11.2"/>
+        <path d="M7.6 10.4L12 14.8l4.4-4.4"/>
+        <path d="M4.4 17.4v1.8a1.8 1.8 0 0 0 1.8 1.8h11.6a1.8 1.8 0 0 0 1.8-1.8v-1.8"/>
+    </symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24">
+        <path d="M12 20.4V9.2"/>
+        <path d="M7.6 13.6L12 9.2l4.4 4.4"/>
+        <path d="M4.4 6.6V4.8A1.8 1.8 0 0 1 6.2 3h11.6a1.8 1.8 0 0 1 1.8 1.8v1.8"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+        <path d="M12 4.6v14.8M4.6 12h14.8"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24">
+        <path d="M6 6l12 12M18 6L6 18"/>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24">
+        <path d="M7.6 4.8l11.6 7.2-11.6 7.2z"/>
+    </symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24">
+        <rect x="5.4" y="5.4" width="13.2" height="13.2" rx="2.4"/>
+    </symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24">
+        <path d="M9 5v14M15 5v14"/>
+    </symbol>
+    <symbol id="i-power" viewBox="0 0 24 24">
+        <path d="M12 3.4v8.2"/>
+        <path d="M17.6 6.6a7.8 7.8 0 1 1-11.2 0"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4.6 20.4a7.4 7.4 0 0 1 14.8 0"/>
+    </symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24">
+        <path d="M14.6 4.6H6.4a1.8 1.8 0 0 0-1.8 1.8v11.2a1.8 1.8 0 0 0 1.8 1.8h8.2"/>
+        <path d="M15.4 8.4L19 12l-3.6 3.6"/>
+        <path d="M9.4 12H19"/>
+    </symbol>
+    <symbol id="i-seedling" viewBox="0 0 24 24">
+        <path d="M12 21V11.4"/>
+        <path d="M12 11.4C12 7 9 4.2 4.4 4.2c0 4.8 3 7.2 7.6 7.2z"/>
+        <path d="M12 13.4c0-3.8 3-6.2 7.6-6.2 0 4-3 6.2-7.6 6.2z"/>
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.6"/>
+        <circle cx="12" cy="12" r="4.6"/>
+        <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-trend-up" viewBox="0 0 24 24">
+        <path d="M3.4 17.4L9.6 11l4 4L21 7.2"/>
+        <path d="M15.4 7.2H21v5.6"/>
+    </symbol>
+    <symbol id="i-trend-down" viewBox="0 0 24 24">
+        <path d="M3.4 7.2L9.6 13.6l4-4L21 17.4"/>
+        <path d="M15.4 17.4H21v-5.6"/>
+    </symbol>
+    <symbol id="i-more" viewBox="0 0 24 24">
+        <circle cx="5.4" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+        <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+        <circle cx="18.6" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24">
+        <path d="M3.6 5.4h16.8l-6.6 7.8v6.2l-3.6-2.2v-4z"/>
+    </symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24">
+        <path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/>
+        <circle cx="12" cy="12" r="2.8"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M4.4 6.8h15.2"/>
+        <path d="M9.2 6.8V4.6a1.2 1.2 0 0 1 1.2-1.2h3.2a1.2 1.2 0 0 1 1.2 1.2v2.2"/>
+        <path d="M6.4 6.8l.9 12.4a1.8 1.8 0 0 0 1.8 1.6h5.8a1.8 1.8 0 0 0 1.8-1.6l.9-12.4"/>
+        <path d="M10.4 10.6v6.6M13.6 10.6v6.6"/>
+    </symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24">
+        <path d="M15.4 4.6l4 4L8.6 19.4H4.6v-4L15.4 4.6z"/>
+        <path d="M13.2 6.8l4 4"/>
+    </symbol>
+    <symbol id="i-database" viewBox="0 0 24 24">
+        <ellipse cx="12" cy="5.8" rx="7.6" ry="3"/>
+        <path d="M4.4 5.8v12.4c0 1.6 3.4 3 7.6 3s7.6-1.4 7.6-3V5.8"/>
+        <path d="M4.4 12c0 1.6 3.4 3 7.6 3s7.6-1.4 7.6-3"/>
+    </symbol>
+    <symbol id="i-code" viewBox="0 0 24 24">
+        <path d="M8.4 7.6L3.4 12l5 4.4"/>
+        <path d="M15.6 7.6l5 4.4-5 4.4"/>
+        <path d="M13.4 4.4l-2.8 15.2"/>
+    </symbol>
+    <symbol id="i-map-pin" viewBox="0 0 24 24">
+        <path d="M12 21.2c4-4.4 6.4-7.8 6.4-10.8a6.4 6.4 0 1 0-12.8 0c0 3 2.4 6.4 6.4 10.8z"/>
+        <circle cx="12" cy="10" r="2.4"/>
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+        <rect x="3.6" y="5.2" width="16.8" height="15.2" rx="2.4"/>
+        <path d="M3.6 10h16.8M8.4 3v4M15.6 3v4"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+        <rect x="4.8" y="10.2" width="14.4" height="10.3" rx="2.2"/>
+        <path d="M8.2 10.2V7.8a3.8 3.8 0 0 1 7.6 0v2.4"/>
+        <circle cx="12" cy="15.2" r="1.1" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24">
+        <rect x="3" y="5.4" width="18" height="13.2" rx="2.4"/>
+        <path d="M3.8 6.8l8.2 6 8.2-6"/>
+    </symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24">
+        <path d="M13.4 2.8L5 13.6h6l-1.4 7.6L18 10.4h-6l1.4-7.6z"/>
+    </symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24">
+        <path d="M4 17.4a9 9 0 1 1 16 0"/>
+        <path d="M12 17.4l4-5"/>
+        <circle cx="12" cy="17.4" r="1.3" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-cloud-data" viewBox="0 0 24 24">
+        <path d="M17 17.4H7a4 4 0 0 1-.6-8 5.4 5.4 0 0 1 10.2-1.1 4.6 4.6 0 0 1 .4 9.1z"/>
+        <path d="M9.4 20.4h5.2"/>
+    </symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24">
+        <path d="M12 3.4l1.7 4.4 4.4 1.7-4.4 1.7L12 15.6l-1.7-4.4L5.9 9.5l4.4-1.7z"/>
+        <path d="M18.4 15.4l.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M12 2.7l7.5 3.4v5.6c0 4.7-3.2 8.4-7.5 9.8-4.3-1.4-7.5-5.1-7.5-9.8V6.1L12 2.7z"/>
+        <path d="M8.7 12.2l2.2 2.2 4.5-4.6"/>
+    </symbol>
+    <symbol id="i-sunrise" viewBox="0 0 24 24">
+        <path d="M3 19.4h18"/>
+        <path d="M6.6 15.8a5.4 5.4 0 0 1 10.8 0"/>
+        <path d="M12 3.4v4M8.6 5.2l1.2 1.2M15.4 5.2l-1.2 1.2"/>
+    </symbol>
+    <symbol id="i-bug" viewBox="0 0 24 24">
+        <path d="M8.2 8.2h7.6v6.4a3.8 3.8 0 0 1-7.6 0z"/>
+        <path d="M8.2 10.4H5.4M8.2 13.6H5.4M15.8 10.4h2.8M15.8 13.6h2.8"/>
+        <path d="M9.4 8.2V6.4a2.6 2.6 0 0 1 5.2 0v1.8"/>
+        <path d="M6.2 6.6l2 2M17.8 6.6l-2 2M6.2 17.4l2.2-2M17.8 17.4l-2.2-2"/>
+    </symbol>
+</svg>
+
+
+<!-- 移动端遮罩：侧边栏展开时点击关闭 -->
+<div class="sidebar-mask" id="sidebarMask" hidden></div>
+
+<div class="app" id="app">
+
+    <!-- ==================================================================
+         侧边栏：品牌、主导航、网关状态、当前用户
+         ================================================================== -->
+    <aside class="sidebar" id="sidebar" aria-label="主导航">
+        <a class="brand" href="index.html">
+            <span class="brand__mark"><svg class="icon" aria-hidden="true"><use href="#i-logo"></use></svg></span>
+            <span class="brand__text">
+                <strong>禾语</strong>
+                <small>智慧农业云平台</small>
+            </span>
+        </a>
+
+        <button class="sidebar__toggle" id="sidebarToggle" type="button"
+                aria-label="收起侧边栏" aria-controls="sidebar" aria-expanded="true">
+            <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg>
+        </button>
+
+        <nav class="nav" aria-label="功能导航">
+        <p class="nav__label">运营中心</p>
+        <div class="nav__group">
+            <a class="nav-item" href="index.html" data-nav="index">
+                <svg class="icon" aria-hidden="true"><use href="#i-dashboard"></use></svg>
+                <span class="nav-item__text">数据驾驶舱</span>
+            </a>
+            <a class="nav-item" href="monitor.html" data-nav="monitor">
+                <svg class="icon" aria-hidden="true"><use href="#i-monitor"></use></svg>
+                <span class="nav-item__text">环境监测</span>
+                <span class="nav-item__badge nav-item__badge--live">LIVE</span>
+            </a>
+            <a class="nav-item is-active" href="irrigation.html" data-nav="irrigation" aria-current="page">
+                <svg class="icon" aria-hidden="true"><use href="#i-irrigation"></use></svg>
+                <span class="nav-item__text">智能灌溉</span>
+            </a>
+            <a class="nav-item" href="devices.html" data-nav="devices">
+                <svg class="icon" aria-hidden="true"><use href="#i-device"></use></svg>
+                <span class="nav-item__text">设备控制</span>
+            </a>
+        </div>
+        <p class="nav__label">数据与洞察</p>
+        <div class="nav__group">
+            <a class="nav-item" href="analysis.html" data-nav="analysis">
+                <svg class="icon" aria-hidden="true"><use href="#i-analysis"></use></svg>
+                <span class="nav-item__text">数据分析</span>
+            </a>
+            <a class="nav-item" href="alarms.html" data-nav="alarms">
+                <svg class="icon" aria-hidden="true"><use href="#i-alarm"></use></svg>
+                <span class="nav-item__text">告警中心</span>
+                <span class="nav-item__badge nav-item__badge--warn" id="navAlarmBadge">2</span>
+            </a>
+            <a class="nav-item" href="farm.html" data-nav="farm">
+                <svg class="icon" aria-hidden="true"><use href="#i-farm"></use></svg>
+                <span class="nav-item__text">地块与作物</span>
+            </a>
+        </div>
+        <p class="nav__label">系统</p>
+        <div class="nav__group">
+            <a class="nav-item" href="settings.html" data-nav="settings">
+                <svg class="icon" aria-hidden="true"><use href="#i-settings"></use></svg>
+                <span class="nav-item__text">系统设置</span>
+            </a>
+        </div>
+        </nav>
+
+        <div class="sidebar__foot">
+            <div class="gateway" id="gatewayCard">
+                <div class="gateway__head">
+                    <span class="gateway__dot is-live"></span>
+                    <span class="gateway__title">边缘网关</span>
+                    <span class="gateway__badge">在线</span>
+                </div>
+                <p class="gateway__meta"><span id="gatewayOnline">12</span> / <span id="gatewayTotal">12</span> 台设备已接入</p>
+                <div class="gateway__bar"><span id="gatewayBar" style="width:100%"></span></div>
+                <p class="gateway__hint"><svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg> MQTT 上行 <span id="gatewayTps">28</span> 条/分</p>
+            </div>
+
+            <a class="user-card" href="settings.html">
+                <span class="user-card__avatar">农</span>
+                <span class="user-card__meta">
+                    <strong>李沐禾</strong>
+                    <small>农场管理员</small>
+                </span>
+                <svg class="icon user-card__arrow" aria-hidden="true"><use href="#i-chevron-left"></use></svg>
+            </a>
+
+            <a class="logout-link" href="login.html">
+                <svg class="icon" aria-hidden="true"><use href="#i-logout"></use></svg>
+                <span>退出登录</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ==================================================================
+         主区域：顶部工具栏 + 页面内容
+         ================================================================== -->
+    <div class="main">
+
+        <header class="topbar">
+            <button class="topbar__menu icon-btn" id="mobileMenu" type="button"
+                    aria-label="展开导航菜单" aria-controls="sidebar">
+                <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+            </button>
+
+            <ol class="crumb" aria-label="面包屑">
+                <li><a href="index.html">运营</a></li>
+                <li class="is-current" aria-current="page">智能灌溉</li>
+            </ol>
+
+            <div class="topbar__tools">
+                <div class="weather-chip" title="寿光 · 国家农业科技园区气象站">
+                    <svg class="icon weather-chip__icon" aria-hidden="true"><use href="#i-cloud-sun"></use></svg>
+                    <span class="weather-chip__temp" id="topWeatherTemp">18°</span>
+                    <span class="weather-chip__text">多云转晴</span>
+                </div>
+
+                <span class="live-chip" id="liveChip" title="数据链路正常，实时同步中">
+                    <span class="live-chip__dot"></span>
+                    <span class="live-chip__text">实时同步</span>
+                </span>
+
+                <button class="icon-btn" id="themeToggle" type="button"
+                        aria-label="切换深色/浅色主题" aria-pressed="false" title="切换主题（T）">
+                    <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"></use></svg>
+                    <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"></use></svg>
+                </button>
+
+                <a class="icon-btn has-dot" href="alarms.html" id="notifyBtn"
+                   aria-label="查看未处理告警" title="告警中心">
+                    <svg class="icon" aria-hidden="true"><use href="#i-alarm"></use></svg>
+                    <span class="icon-btn__dot" id="notifyDot">2</span>
+                </a>
+
+                <div class="clock" id="headerClock" aria-live="off">
+                    <strong id="clockTime">08:00:00</strong>
+                    <small id="clockDate">2026/11/20 周五</small>
+                </div>
+            </div>
+        </header>
+
+        <main class="content" id="content">
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#7fd9ff"></stop>
+            <stop offset="55%" stop-color="#2ecf8f"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+        <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ceab4"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+    </defs>
+</svg>
+
+<section class="page-head reveal">
+    <div>
+        <p class="page-head__eyebrow">
+            <svg class="icon" aria-hidden="true"><use href="#i-irrigation"></use></svg>
+            IRRIGATION DECISION · 决策引擎 v2.3
+        </p>
+        <h1>智能<span class="accent">灌溉</span></h1>
+        <p class="page-head__desc">
+            把「什么时候浇、浇多少、浇哪一块」交给数据：墒情缺口 × 作物系数 × 蒸散量，
+            再按 24 小时降雨概率折减，最终给出一份可直接执行的灌溉工单。
+        </p>
+    </div>
+    <div class="page-head__actions">
+        <span class="live-chip" id="engineChip"><span class="live-chip__dot"></span><span class="live-chip__text">决策引擎运行中</span></span>
+        <button type="button" class="btn-agri btn-ghost btn-sm" id="recalcBtn">
+            <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+            重新计算
+        </button>
+    </div>
+</section>
+
+<!-- ==================================================================
+     决策结论 + 紧迫度仪表
+     ================================================================== -->
+<div class="irr-top">
+    <section class="decision-hero reveal" style="--delay:.04s">
+        <div class="decision-hero__main">
+            <span class="decision-hero__label"><span class="dot"></span>今日决策 · 10:00 更新</span>
+            <h2 class="decision-hero__title" id="decisionTitle">C 区 · 露天小麦<em>建议今日 15:30 灌溉</em></h2>
+            <p class="decision-hero__desc" id="decisionDesc">
+                土壤含水率低于设定下限，且未来 24 小时无有效降雨，建议按 104 m³ 分两次补灌；
+                首轮 60 m³ 于 15:30 开始，可覆盖 0–30cm 根层。
+            </p>
+            <div class="decision-hero__stats">
+                <div class="decision-hero__stat">
+                    <b id="decisionVolume">104.3<small>m³</small></b>
+                    <span>建议水量</span>
+                </div>
+                <div class="decision-hero__stat">
+                    <b id="decisionDuration">372<small>分钟</small></b>
+                    <span>预计时长</span>
+                </div>
+                <div class="decision-hero__stat">
+                    <b id="decisionDeficit">16.8<small>%</small></b>
+                    <span>含水率缺口</span>
+                </div>
+                <div class="decision-hero__stat">
+                    <b id="decisionSaved">28.4<small>%</small></b>
+                    <span>较漫灌节水</span>
+                </div>
+            </div>
+            <div class="hero__actions">
+                <button type="button" class="btn-agri btn-lg" id="quickIrrigate">
+                    <svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg>
+                    立即执行建议
+                </button>
+                <a class="btn-agri btn-hero-ghost btn-lg" href="monitor.html">
+                    查看墒情曲线
+                    <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+                </a>
+            </div>
+        </div>
+
+        <div class="decision-hero__gauge">
+            <div class="gauge" id="decisionGauge" style="--p:72">
+                <svg class="gauge__svg" viewBox="0 0 200 108" aria-hidden="true">
+                    <path class="gauge__track" d="M20 100 A80 80 0 0 1 180 100"></path>
+                    <path class="gauge__fill" d="M20 100 A80 80 0 0 1 180 100"></path>
+                </svg>
+                <div class="gauge__readout"><span id="gaugeValue">72</span><small>分</small></div>
+                <div class="gauge__cap">灌溉紧迫度</div>
+            </div>
+            <p class="gauge__tip">分值越高越紧迫<br>≥ 70 建议 6 小时内执行</p>
+        </div>
+    </section>
+
+    <section class="card threshold-panel reveal" style="--delay:.1s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">灌溉阈值</h3>
+                <p class="card__sub">低于下限自动启动，高于上限自动停止</p>
+            </div>
+            <label class="switch" title="自动灌溉开关">
+                <input type="checkbox" id="autoSwitch" checked>
+                <span class="switch__track"></span>
+            </label>
+        </div>
+        <div class="card__body">
+            <div class="threshold-value">
+                <div class="threshold-value__num"><span id="thresholdText">45 – 72</span><small>%RH</small></div>
+                <span class="threshold-value__hint">适宜区间</span>
+            </div>
+
+            <div class="nstSlider" id="moistureSlider"
+                 data-range_min="30" data-range_max="90" data-cur_min="45" data-cur_max="72">
+                <div class="bar" id="sliderBar"></div>
+                <div class="leftGrip" id="sliderLeft"></div>
+                <div class="rightGrip" id="sliderRight"></div>
+                <div class="leftLabel nstSlider-val" id="sliderLeftLabel"></div>
+                <div class="rightLabel nstSlider-val" id="sliderRightLabel"></div>
+            </div>
+
+            <div class="row row--flex irr-threshold-stats">
+                <div class="col-xs-6">
+                    <div class="farm-cell">
+                        <span>低于下限的地块</span>
+                        <b id="triggerCount">2<small>个</small></b>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <div class="farm-cell">
+                        <span>预计节水</span>
+                        <b id="savedEstimate">28.4<small>%</small></b>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notice mt-14">
+                <svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>
+                <p class="notice__text">
+                    当前策略：含水率低于 <b id="autoLowTip">45%</b> 自动开启对应地块阀门，
+                    到达 <b id="autoHighTip">72%</b> 停止。单次灌溉不超过 30 m³。
+                </p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ==================================================================
+     灌溉计划 + 手动执行
+     ================================================================== -->
+<div class="irr-mid">
+    <section class="card reveal" style="--delay:.14s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">今日灌溉计划</h3>
+                <p class="card__sub">按时间排序，执行结果自动回写</p>
+            </div>
+            <div class="card__tools">
+                <span class="pill pill--muted" id="planSummary">4 项 · 已完成 2</span>
+                <button type="button" class="btn-agri btn-soft btn-sm" data-toggle="modal" data-target="#planModal">
+                    <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+                    新增
+                </button>
+            </div>
+        </div>
+        <div class="card__body card__body--flush">
+            <div class="plan-list" id="planList" style="padding:6px 14px 14px"></div>
+        </div>
+        <div class="card__foot">
+            <span>计划由决策引擎生成，可手动调整时间与水量</span>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.18s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">手动执行</h3>
+                <p class="card__sub">选择地块与水量，立即下发开阀指令</p>
+            </div>
+            <span class="pill pill--water" id="execMode"><i class="pill__dot"></i>手动模式</span>
+        </div>
+        <div class="card__body">
+            <div class="exec">
+                <div class="exec__target" id="execTargets">
+                    <button type="button" class="exec__chip is-active" data-field="C">
+                        <span class="dot" style="background:#d9c46a"></span><b>C 区小麦</b>
+                    </button>
+                    <button type="button" class="exec__chip" data-field="A">
+                        <span class="dot" style="background:#2ecf8f"></span><b>A 区番茄</b>
+                    </button>
+                    <button type="button" class="exec__chip" data-field="B">
+                        <span class="dot" style="background:#5ad6a8"></span><b>B 区黄瓜</b>
+                    </button>
+                    <button type="button" class="exec__chip" data-field="D">
+                        <span class="dot" style="background:#ef8b78"></span><b>D 区草莓</b>
+                    </button>
+                </div>
+
+                <div class="exec__bar">
+                    <div class="exec__bar-head"><span>灌溉水量</span><b id="execVolume">26.4 m³</b></div>
+                    <input class="range" id="volumeRange" type="range" min="0" max="120" step="0.2" value="26.4" aria-label="灌溉水量">
+                    <div class="exec__bar-head" style="margin-top:2px">
+                        <span>预计时长</span><b id="execDuration">94 分钟</b>
+                    </div>
+                </div>
+
+                <div class="irrigating" id="irrigating">
+                    <span class="irrigating__icon"><svg class="icon" aria-hidden="true"><use href="#i-droplet"></use></svg></span>
+                    <div class="irrigating__body">
+                        <div class="irrigating__title" id="irrigatingTitle">待执行 · C 区露天小麦</div>
+                        <p class="irrigating__text" id="irrigatingText">开阀后将实时回传流量与累计水量</p>
+                        <div class="meter mt-8"><span class="meter__bar" id="irrigatingBar" style="width:0%"></span></div>
+                    </div>
+                    <span class="pill pill--muted" id="irrigatingPill">就绪</span>
+                </div>
+
+                <button type="button" class="btn-agri btn-lg btn-block" id="execBtn">
+                    <svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg>
+                    开始灌溉
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ==================================================================
+     决策明细 + 水源
+     ================================================================== -->
+<div class="irr-bottom">
+    <section class="card reveal" style="--delay:.22s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">各地块决策明细</h3>
+                <p class="card__sub">缺口 = 目标含水率 − 当前含水率</p>
+            </div>
+            <button type="button" class="icon-btn" data-refresh aria-label="刷新决策">
+                <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+            </button>
+        </div>
+        <div class="card__body card__body--flush">
+            <div class="table-wrap">
+                <table class="table-agri">
+                    <thead>
+                        <tr>
+                            <th>地块</th>
+                            <th>作物 / 生育期</th>
+                            <th class="num">当前含水率</th>
+                            <th class="num">目标</th>
+                            <th class="num">缺口</th>
+                            <th class="num">建议水量</th>
+                            <th>紧迫度</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="decisionBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card__foot">
+            <span>决策参数：作物系数 Kc、参考蒸散量 ET₀ 3.2 mm、降雨概率 10%</span>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.26s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">水源与蓄水池</h3>
+                <p class="card__sub">1 号蓄水池 · 容量 200 m³</p>
+            </div>
+            <span class="pill pill--water"><i class="pill__dot"></i>供水正常</span>
+        </div>
+        <div class="card__body">
+            <div class="tank-wrap">
+                <div class="tank">
+                    <div class="tank__water" style="--level:68%">
+                        <svg class="tank__wave" viewBox="0 0 200 18" preserveAspectRatio="none" aria-hidden="true">
+                            <path d="M0 9 Q25 2 50 9 T100 9 T150 9 T200 9 V18 H0 Z"></path>
+                        </svg>
+                        <svg class="tank__wave tank__wave--back" viewBox="0 0 200 18" preserveAspectRatio="none" aria-hidden="true">
+                            <path d="M0 9 Q25 2 50 9 T100 9 T150 9 T200 9 V18 H0 Z"></path>
+                        </svg>
+                    </div>
+                    <div class="tank__scale"><span>200</span><span>150</span><span>100</span><span>50</span></div>
+                    <div class="tank__value">136<small>m³</small></div>
+                </div>
+                <div class="tank-meta">
+                    <div class="tank-meta__row"><span class="tank-meta__label">当前水位</span><span class="tank-meta__value">68<small>%</small></span></div>
+                    <div class="tank-meta__row"><span class="tank-meta__label">今日取水</span><span class="tank-meta__value">22.3<small>m³</small></span></div>
+                    <div class="tank-meta__row"><span class="tank-meta__label">剩余配额</span><span class="tank-meta__value">77.7<small>m³</small></span></div>
+                    <div class="tank-meta__row"><span class="tank-meta__label">补给时间</span><span class="tank-meta__value">明日 04:00</span></div>
+                </div>
+            </div>
+
+            <div class="mt-18">
+                <div class="source-row">
+                    <span class="source-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-pump"></use></svg></span>
+                    <div class="source-row__meta">
+                        <div class="source-row__name">1 号灌溉泵</div>
+                        <div class="source-row__sub">离心泵 · 1.1 kW · 运行 2h18m</div>
+                    </div>
+                    <span class="source-row__value">18.4 m³/h</span>
+                </div>
+                <div class="source-row">
+                    <span class="source-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-valve"></use></svg></span>
+                    <div class="source-row__meta">
+                        <div class="source-row__name">A 区滴灌阀</div>
+                        <div class="source-row__sub">DN50 电磁阀 · 已开启</div>
+                    </div>
+                    <span class="source-row__value">6.2 m³/h</span>
+                </div>
+                <div class="source-row">
+                    <span class="source-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-droplet"></use></svg></span>
+                    <div class="source-row__meta">
+                        <div class="source-row__name">水肥一体机</div>
+                        <div class="source-row__sub">EC 1.82 mS/cm · pH 6.5</div>
+                    </div>
+                    <span class="source-row__value">配比正常</span>
+                </div>
+            </div>
+
+            <div class="source-bar mt-14">
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-water"></use></svg>本轮节水 <b>28.4%</b></span>
+                <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>下次决策 <b>10:10</b></span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- 新增计划弹窗 -->
+<div class="modal fade" id="planModal" tabindex="-1" role="dialog" aria-labelledby="planModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="planModalTitle">新增灌溉计划</h4>
+            </div>
+            <div class="modal-body">
+                <label class="field">
+                    <span class="field__label">地块</span>
+                    <select class="select" id="planField">
+                        <option value="A">A 区 · 番茄温室</option>
+                        <option value="B">B 区 · 黄瓜大棚</option>
+                        <option value="C" selected>C 区 · 露天小麦</option>
+                        <option value="D">D 区 · 草莓高架</option>
+                    </select>
+                </label>
+                <label class="field">
+                    <span class="field__label">开始时间</span>
+                    <input class="input" id="planTime" type="time" value="15:30">
+                </label>
+                <label class="field">
+                    <span class="field__label">灌溉水量 <span class="field__hint">m³</span></span>
+                    <input class="input" id="planVolume" type="number" min="1" max="120" step="0.1" value="20">
+                </label>
+                <div class="notice mt-14">
+                    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+                    <p class="notice__text">单次灌溉上限 30 m³，超出需二次确认；计划将在开始前 10 分钟自动校验墒情。</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-agri btn-ghost btn-sm" data-dismiss="modal">取消</button>
+                <button type="button" class="btn-agri btn-sm" id="planConfirm">保存计划</button>
+            </div>
+        </div>
+    </div>
+</div>
+        </main>
+
+        <footer class="site-foot">
+            <span>© 2026 禾语智慧农业云平台 · 山东华宇工学院 物联网工程 2402</span>
+            <span class="site-foot__right">
+                <span class="site-foot__dot"></span>
+                演示数据由本地 IoT 中间件模拟生成 · 页面渲染 <span id="footRender">0</span> ms
+            </span>
+        </footer>
+    </div>
+</div>
+
+<!-- 全局提示条容器 -->
+<div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="false"></div>
+
+<!-- 页面切换过渡遮罩 -->
+<div class="page-veil" id="pageVeil" aria-hidden="true"></div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.nstSlider.min.js"></script>
+<script src="js/highcharts.js"></script>
+<script src="js/data.js"></script>
+<script src="js/iot-middleware.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+<script src="js/pages/irrigation.js"></script>
+</body>
+</html>

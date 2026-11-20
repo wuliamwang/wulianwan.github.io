@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.documentElement.classList.add("js");</script>
+    <meta name="theme-color" content="#08281d">
+    <meta name="description" content="{{DESC}}">
+    <title>{{TITLE}} · 禾语智慧农业云平台</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23147a4d'/%3E%3Cpath d='M23.5 7.8c-8.6-.3-14.4 3.4-14.4 9.6 0 1.9.5 3.5 1.5 4.7 2.5-6 7.2-9.9 12.9-13.3' fill='none' stroke='%23d9f7e6' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M23.5 7.8c.8 7.9-2.9 12.9-8.8 13.4-1.6.2-3-.3-3.9-1.2' fill='none' stroke='%2378e3ab' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+{{EXTRA_HEAD}}
+    <link href="css/app.css" rel="stylesheet">
+    <link href="css/widgets.css" rel="stylesheet">
+    <link href="css/pages.css" rel="stylesheet">
+</head>
+<body class="{{BODY_CLASS}}">
+
+{{SPRITE}}
+
+<button class="icon-btn auth-theme" id="themeToggle" type="button" aria-label="切换深色/浅色主题" aria-pressed="false" title="切换主题（T）">
+    <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"></use></svg>
+    <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"></use></svg>
+</button>
+
+{{CONTENT}}
+
+<div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="false"></div>
+<div class="page-veil" id="pageVeil" aria-hidden="true"></div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+{{EXTRA_JS}}
+<script src="js/data.js"></script>
+<script src="js/iot-middleware.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+{{PAGE_JS}}
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!--@{"title":"地块与作物","nav":"farm","crumb":"地块与作物","desc":"地块与作物档案：4 个地块的空间分布、作物生育期、产量预估与农事记录。","lib":["highcharts"]}@-->
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ceab4"></stop>
+            <stop offset="100%" stop-color="#a3e05a"></stop>
+        </linearGradient>
+    </defs>
+</svg>
+
+<section class="page-head reveal">
+    <div>
+        <p class="page-head__eyebrow">
+            <svg class="icon" aria-hidden="true"><use href="#i-farm"></use></svg>
+            FARM &amp; CROP · 4 个地块 · 74.9 亩
+        </p>
+        <h1>地块与<span class="accent">作物</span></h1>
+        <p class="page-head__desc">
+            每个地块都有独立的作物档案、生育期与产量预估。墒情阈值、补光策略与灌溉计划
+            都挂在档案上，换茬时一键继承上一季参数。
+        </p>
+    </div>
+    <div class="page-head__actions">
+        <button type="button" class="btn-agri btn-ghost btn-sm" id="exportFarm">
+            <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+            导出档案
+        </button>
+        <button type="button" class="btn-agri btn-sm" data-toggle="modal" data-target="#fieldModal">
+            <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+            新增地块
+        </button>
+    </div>
+</section>
+
+<div class="farm-layout">
+    <section class="card card--spot reveal" style="--delay:.04s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">园区空间分布</h3>
+                <p class="card__sub">点击地块查看作物档案，绿色脉冲点为在线传感器</p>
+            </div>
+            <span class="pill pill--ok"><i class="pill__dot"></i>4 个地块在线</span>
+        </div>
+        <div class="card__body card__body--tight">
+            <div class="field-map" id="fieldMap">
+                <svg class="field-map__svg" viewBox="0 0 640 360" role="img" aria-label="园区地块分布">
+                    <rect class="map-boundary" x="16" y="16" width="608" height="328" rx="20"></rect>
+                    <path class="map-road" d="M16 190 H624"></path>
+                    <path class="map-road-dash" d="M16 190 H624"></path>
+                    <path class="map-road" d="M336 16 V190"></path>
+                    <path class="map-road-dash" d="M336 16 V190"></path>
+
+                    <g class="patch is-active" data-field="A" tabindex="0" role="button" aria-label="A 区番茄温室">
+                        <rect class="patch__shape" x="48" y="44" width="264" height="122" rx="14" fill="rgba(46,207,143,0.20)" stroke="rgba(46,207,143,0.55)"></rect>
+                        <text class="patch__label" x="66" y="74">A 区 · 番茄温室</text>
+                        <text class="patch__crop" x="66" y="90">12.6 亩 · 结果期</text>
+                        <text class="patch__value" x="66" y="146">92<tspan font-size="9" font-weight="500"> 分</tspan></text>
+                    </g>
+                    <g class="patch" data-field="B" tabindex="0" role="button" aria-label="B 区黄瓜大棚">
+                        <rect class="patch__shape" x="360" y="44" width="232" height="122" rx="14" fill="rgba(46,207,143,0.20)" stroke="rgba(46,207,143,0.55)"></rect>
+                        <text class="patch__label" x="378" y="74">B 区 · 黄瓜大棚</text>
+                        <text class="patch__crop" x="378" y="90">9.8 亩 · 采收期</text>
+                        <text class="patch__value" x="378" y="146">78<tspan font-size="9" font-weight="500"> 分</tspan></text>
+                    </g>
+                    <g class="patch" data-field="C" tabindex="0" role="button" aria-label="C 区露天小麦">
+                        <rect class="patch__shape" x="48" y="216" width="380" height="118" rx="14" fill="rgba(221,154,43,0.18)" stroke="rgba(221,154,43,0.50)"></rect>
+                        <text class="patch__label" x="66" y="246">C 区 · 露天小麦</text>
+                        <text class="patch__crop" x="66" y="262">46.2 亩 · 分蘖期</text>
+                        <text class="patch__value" x="66" y="316">64<tspan font-size="9" font-weight="500"> 分</tspan></text>
+                    </g>
+                    <g class="patch" data-field="D" tabindex="0" role="button" aria-label="D 区草莓高架">
+                        <rect class="patch__shape" x="452" y="216" width="140" height="118" rx="14" fill="rgba(46,207,143,0.20)" stroke="rgba(46,207,143,0.55)"></rect>
+                        <text class="patch__label" x="470" y="246">D 区 · 草莓</text>
+                        <text class="patch__crop" x="470" y="262">6.4 亩 · 开花期</text>
+                        <text class="patch__value" x="470" y="316">88<tspan font-size="9" font-weight="500"> 分</tspan></text>
+                    </g>
+
+                    <g class="sensor-pin" data-field="A" transform="translate(238,120)">
+                        <circle class="sensor-pin__halo" r="9"></circle><circle class="sensor-pin__core" r="3.4"></circle>
+                    </g>
+                    <g class="sensor-pin" data-field="B" transform="translate(500,120)">
+                        <circle class="sensor-pin__halo" r="9"></circle><circle class="sensor-pin__core" r="3.4"></circle>
+                    </g>
+                    <g class="sensor-pin is-warn" data-field="C" transform="translate(250,296)">
+                        <circle class="sensor-pin__halo" r="9"></circle><circle class="sensor-pin__core" r="3.4"></circle>
+                    </g>
+                    <g class="sensor-pin" data-field="D" transform="translate(530,290)">
+                        <circle class="sensor-pin__halo" r="9"></circle><circle class="sensor-pin__core" r="3.4"></circle>
+                    </g>
+
+                    <text class="map-caption" x="596" y="26" text-anchor="middle">N</text>
+                    <circle class="map-compass" cx="596" cy="38" r="8"></circle>
+                    <path class="map-compass" d="M596 32 L599 40 L596 38 L593 40 Z" fill="currentColor"></path>
+                    <path class="map-scale" d="M48 340 H108"></path>
+                    <text class="map-caption" x="112" y="343">50 m</text>
+                </svg>
+            </div>
+            <div class="map-legend map-legend--row">
+                <span class="map-legend__item"><i class="map-legend__swatch" style="background:#2ecf8f"></i>长势良好</span>
+                <span class="map-legend__item"><i class="map-legend__swatch" style="background:#d9c46a"></i>需关注</span>
+                <span class="map-legend__item"><i class="map-legend__swatch" style="background:#ef8b78"></i>缺水/风险</span>
+                <span class="map-legend__item" style="margin-left:auto">比例尺 1 : 2000</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="card reveal" style="--delay:.1s">
+        <div class="card__head">
+            <div class="card__titles">
+                <h3 class="card__title">地块档案</h3>
+                <p class="card__sub" id="detailSub">点击左侧地块切换</p>
+            </div>
+            <span class="pill pill--ok" id="detailHealth">健康度 92</span>
+        </div>
+        <div class="card__body">
+            <div class="farm-detail">
+                <div class="farm-detail__head">
+                    <div>
+                        <div class="farm-detail__name" id="detailName">A 区 · 番茄温室</div>
+                        <div class="farm-detail__sub" id="detailMeta">12.6 亩 · 普罗旺斯 · 结果期</div>
+                    </div>
+                </div>
+
+                <div class="stages" id="detailStages">
+                    <span class="stage is-done">定植</span>
+                    <span class="stage is-done">开花</span>
+                    <span class="stage is-done">坐果</span>
+                    <span class="stage is-current">采收</span>
+                </div>
+
+                <div class="farm-detail__grid" id="detailGrid">
+                    <div class="farm-cell"><span>土壤含水率</span><b>61.4<small>%</small></b></div>
+                    <div class="farm-cell"><span>空气温度</span><b>24.2<small>°C</small></b></div>
+                    <div class="farm-cell"><span>预计产量</span><b>48.6<small>吨</small></b></div>
+                    <div class="farm-cell"><span>已用水量</span><b>12.4<small>m³</small></b></div>
+                </div>
+
+                <div class="exec__target" style="margin-top:4px">
+                    <a class="exec__chip" href="monitor.html">
+                        <span class="dot" style="background:var(--brand)"></span><b>查看监测</b>
+                    </a>
+                    <a class="exec__chip" href="irrigation.html">
+                        <span class="dot" style="background:var(--water)"></span><b>灌溉计划</b>
+                    </a>
+                </div>
+
+                <div class="notice">
+                    <svg class="icon" aria-hidden="true"><use href="#i-seedling"></use></svg>
+                    <p class="notice__text" id="detailNote">
+                        结果期需保持土壤含水率 65–75%，当前略低于目标值，建议今日补灌一次。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- 地块卡片 -->
+<div class="row row--flex">
+    <div class="col-sm-6 col-md-3">
+        <article class="card card--hover reveal" data-field-card="A" style="--delay:.14s;cursor:pointer">
+            <div class="card__body card__body--tight">
+                <div class="crop-item" style="background:none;padding:0;border:0">
+                    <span class="crop-item__icon"><svg class="icon" aria-hidden="true"><use href="#i-seedling"></use></svg></span>
+                    <div class="crop-item__body">
+                        <div class="crop-item__name">A 区 · 番茄温室</div>
+                        <div class="crop-item__sub">普罗旺斯 · 结果期</div>
+                    </div>
+                    <div class="crop-item__value">12.6<small>亩</small></div>
+                </div>
+                <div class="mt-14">
+                    <div class="exec__bar-head"><span>土壤含水率</span><b>61.4%</b></div>
+                    <div class="meter meter--thin"><span class="meter__bar" style="width:61.4%"></span></div>
+                </div>
+                <div class="source-bar mt-14">
+                    <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>健康度 <b>92</b></span>
+                    <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg>12-20 采收</span>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <article class="card card--hover reveal" data-field-card="B" style="--delay:.18s;cursor:pointer">
+            <div class="card__body card__body--tight">
+                <div class="crop-item" style="background:none;padding:0;border:0">
+                    <span class="crop-item__icon"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg></span>
+                    <div class="crop-item__body">
+                        <div class="crop-item__name">B 区 · 黄瓜大棚</div>
+                        <div class="crop-item__sub">津优 35 · 采收期</div>
+                    </div>
+                    <div class="crop-item__value">9.8<small>亩</small></div>
+                </div>
+                <div class="mt-14">
+                    <div class="exec__bar-head"><span>土壤含水率</span><b>72.8%</b></div>
+                    <div class="meter meter--thin"><span class="meter__bar" style="width:72.8%"></span></div>
+                </div>
+                <div class="source-bar mt-14">
+                    <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>健康度 <b>78</b></span>
+                    <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg>11-28 采收</span>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <article class="card card--hover reveal" data-field-card="C" style="--delay:.22s;cursor:pointer">
+            <div class="card__body card__body--tight">
+                <div class="crop-item" style="background:none;padding:0;border:0">
+                    <span class="crop-item__icon" style="color:var(--gold);background:var(--gold-soft)"><svg class="icon" aria-hidden="true"><use href="#i-farm"></use></svg></span>
+                    <div class="crop-item__body">
+                        <div class="crop-item__name">C 区 · 露天小麦</div>
+                        <div class="crop-item__sub">济麦 22 · 分蘖期</div>
+                    </div>
+                    <div class="crop-item__value">46.2<small>亩</small></div>
+                </div>
+                <div class="mt-14">
+                    <div class="exec__bar-head"><span>土壤含水率</span><b>41.2%</b></div>
+                    <div class="meter meter--thin meter--danger"><span class="meter__bar" style="width:41.2%"></span></div>
+                </div>
+                <div class="source-bar mt-14">
+                    <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>健康度 <b>64</b></span>
+                    <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg>06-12 采收</span>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <article class="card card--hover reveal" data-field-card="D" style="--delay:.26s;cursor:pointer">
+            <div class="card__body card__body--tight">
+                <div class="crop-item" style="background:none;padding:0;border:0">
+                    <span class="crop-item__icon" style="color:var(--soil);background:var(--soil-soft)"><svg class="icon" aria-hidden="true"><use href="#i-seedling"></use></svg></span>
+                    <div class="crop-item__body">
+                        <div class="crop-item__name">D 区 · 草莓高架</div>
+                        <div class="crop-item__sub">红颜 · 开花期</div>
+                    </div>
+                    <div class="crop-item__value">6.4<small>亩</small></div>
+                </div>
+                <div class="mt-14">
+                    <div class="exec__bar-head"><span>土壤含水率</span><b>66.2%</b></div>
+                    <div class="meter meter--thin"><span class="meter__bar" style="width:66.2%"></span></div>
+                </div>
+                <div class="source-bar mt-14">
+                    <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>健康度 <b>88</b></span>
+                    <span class="source-bar__item"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg>01-20 采收</span>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>
+
+<div class="row row--flex mt-18">
+    <div class="col-md-6">
+        <section class="card reveal" style="--delay:.3s;height:100%">
+            <div class="card__head">
+                <div class="card__titles">
+                    <h3 class="card__title">作物档案</h3>
+                    <p class="card__sub">定植 / 采收 / 产量预估</p>
+                </div>
+            </div>
+            <div class="card__body card__body--flush">
+                <div class="table-wrap">
+                    <table class="table-agri">
+                        <thead>
+                            <tr>
+                                <th>地块</th>
+                                <th>品种</th>
+                                <th>定植</th>
+                                <th>预计采收</th>
+                                <th class="num">预计产量</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cropBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-md-6">
+        <section class="card reveal" style="--delay:.34s;height:100%">
+            <div class="card__head">
+                <div class="card__titles">
+                    <h3 class="card__title">生育期进度</h3>
+                    <p class="card__sub">红色竖线为今天 · 空心为计划阶段</p>
+                </div>
+            </div>
+            <div class="card__body">
+                <div class="gantt" id="gantt"></div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<section class="card mt-18 reveal" style="--delay:.38s">
+    <div class="card__head">
+        <div class="card__titles">
+            <h3 class="card__title">近期农事记录</h3>
+            <p class="card__sub">来自移动端上报与系统自动记录</p>
+        </div>
+        <span class="pill pill--muted">近 7 天</span>
+    </div>
+    <div class="card__body">
+        <div class="timeline">
+            <div class="timeline__item">
+                <div class="timeline__time">今天 08:16</div>
+                <div class="timeline__title">A 区晨间滴灌完成</div>
+                <div class="timeline__text">用水 12.6 m³，追施高钾水溶肥 2.4 kg，EC 控制在 1.82 mS/cm。</div>
+            </div>
+            <div class="timeline__item">
+                <div class="timeline__time">昨天 16:40</div>
+                <div class="timeline__title">B 区黄瓜落蔓与疏叶</div>
+                <div class="timeline__text">人工完成 6 行落蔓，摘除下部老叶，改善通风。</div>
+            </div>
+            <div class="timeline__item">
+                <div class="timeline__time">11-18 09:10</div>
+                <div class="timeline__title">C 区小麦查苗补种</div>
+                <div class="timeline__text">补种缺苗断垄 3 处，出苗率由 91% 提升至 96%。</div>
+            </div>
+            <div class="timeline__item is-muted">
+                <div class="timeline__time">11-17 14:22</div>
+                <div class="timeline__title">D 区草莓疏花</div>
+                <div class="timeline__text">疏除弱花 240 朵，减少养分消耗，提高单果重。</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 新增地块 -->
+<div class="modal fade" id="fieldModal" tabindex="-1" role="dialog" aria-labelledby="fieldModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="fieldModalTitle">新增地块</h4>
+            </div>
+            <div class="modal-body">
+                <label class="field">
+                    <span class="field__label">地块名称</span>
+                    <input class="input" id="newFieldName" type="text" placeholder="例如：E 区 · 生菜水培">
+                </label>
+                <label class="field">
+                    <span class="field__label">种植作物</span>
+                    <input class="input" id="newFieldCrop" type="text" placeholder="例如：生菜">
+                </label>
+                <label class="field">
+                    <span class="field__label">面积 <span class="field__hint">亩</span></span>
+                    <input class="input" id="newFieldArea" type="number" min="0.1" step="0.1" value="5">
+                </label>
+                <div class="notice mt-14">
+                    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+                    <p class="notice__text">新增地块后会继承园区默认阈值（45–72%），可在「系统设置」中单独调整。</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-agri btn-ghost btn-sm" data-dismiss="modal">取消</button>
+                <button type="button" class="btn-agri btn-sm" id="fieldConfirm">创建地块</button>
+            </div>
+        </div>
+    </div>
+</div>
